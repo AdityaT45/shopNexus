@@ -35,7 +35,7 @@ function MyOrdersScreen() {
                                 Status: <span className={`badge bg-${order.status === 'Delivered' ? 'success' : 'warning'}`}>{order.status}</span>
                             </p>
                             <p className='mb-1'>
-                                Items: {order.items.reduce((acc, item) => acc + item.quantity, 0)} total
+                                Items: {order.items ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0} total
                             </p>
                             <p className='mb-1'>
                                 **Total: $ {order.totalPrice.toFixed(2)}**

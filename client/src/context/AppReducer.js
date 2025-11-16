@@ -1,10 +1,22 @@
 // client-context/src/context/AppReducer.js
 
+// Helper function to safely get user from localStorage
+const getUserFromStorage = () => {
+  try {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error('Error parsing user from localStorage:', error);
+    localStorage.removeItem("user"); // Clear corrupted data
+    return null;
+  }
+};
+
 // Initial state will combine Auth and Products states
 export const initialState = {
   // Auth State
-  user: JSON.parse(localStorage.getItem("user")) || null,
-  isAuthenticated: !!JSON.parse(localStorage.getItem("user")),
+  user: getUserFromStorage(),
+  isAuthenticated: !!getUserFromStorage(),
 
   // Product State
   products: [],
@@ -18,8 +30,8 @@ export const initialState = {
   cart: null,
 
   // Order State
-    lastOrder: null, 
-    myOrders: [],  
+  lastOrder: null,
+  myOrders: [],
 };
 
 // The central Reducer function
@@ -52,6 +64,9 @@ export const AppReducer = (state, action) => {
         products: [],
         error: null,
         productDetails: null,
+        cart: null,
+        myOrders: [],
+        lastOrder: null,
       };
 
     // --- Product Actions ---
@@ -79,6 +94,20 @@ export const AppReducer = (state, action) => {
       return {
         ...state,
         cart: null,
+      };
+
+    // --- Order Actions ---
+    case "CREATE_ORDER_SUCCESS":
+      return {
+        ...state,
+        lastOrder: action.payload,
+        error: null,
+      };
+    case "SET_MY_ORDERS":
+      return {
+        ...state,
+        myOrders: action.payload,
+        error: null,
       };
 
     default:

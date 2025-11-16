@@ -13,7 +13,14 @@ function Login() {
 
     useEffect(() => {
         if (error) { alert(error); }
-        if (isAuthenticated) { navigate("/"); }
+        if (isAuthenticated) {
+            const stored = JSON.parse(localStorage.getItem('user'));
+            if (stored?.role === 'Admin' || stored?.isAdmin) {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/dashboard');
+            }
+        }
     }, [isAuthenticated, error, navigate]);
 
     const onChange = (e) => { setFormData((prevState) => ({ ...prevState, [e.target.name]: e.target.value, })); };

@@ -1,7 +1,8 @@
-const express=require('express')
-const router=express.Router()
+const express = require('express')
+const router = express.Router()
 
-const { protect,admin,superAdmin } = require('../middleware/authMiddleware');
+const { protect, admin, superAdmin } = require('../middleware/authMiddleware');
+const { getUsers} = require('../controllers/userController');
 
 
 router.get('/profile', protect, (req, res) => {
@@ -25,7 +26,10 @@ router.get('/admin', protect, admin, (req, res) => {
     });
 });
 
-module.exports = router;
+// Admin-only user management
+router.get('/', protect, admin, getUsers);
+// router.put('/:userId/role', protect, admin, updateUserRole);
+// router.delete('/:userId', protect, admin, deleteUser);
 
 
 

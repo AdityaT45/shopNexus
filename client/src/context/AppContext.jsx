@@ -1,4 +1,4 @@
-import React, { createContext, useReducer } from 'react';
+import React, { createContext, useReducer, useCallback } from 'react';
 import { AppReducer, initialState } from './AppReducer';
 import axios from 'axios';
 
@@ -55,7 +55,16 @@ export const AppProvider = ({ children }) => {
 
     // 🔑 Function 2: Handle User Logout
     const logoutUser = () => {
-        dispatch({ type: 'LOGOUT' });
+        try {
+            // Clear localStorage
+            localStorage.removeItem('user');
+            // Dispatch logout action to clear all state
+            dispatch({ type: 'LOGOUT' });
+        } catch (error) {
+            console.error('Error during logout:', error);
+            // Even if there's an error, still try to clear the state
+            dispatch({ type: 'LOGOUT' });
+        }
     };
 
     // 🔑 Function 3: Fetch Public Products
@@ -103,7 +112,7 @@ export const AppProvider = ({ children }) => {
     };
 
     // --- Action Function 5: Fetch Cart ---
-    const fetchCart = async () => {
+    const fetchCart = useCallback(async () => {
         if (!state.isAuthenticated) return;
         dispatch({ type: 'SET_LOADING', payload: true });
         try {
@@ -115,14 +124,14 @@ export const AppProvider = ({ children }) => {
         } finally {
             dispatch({ type: 'SET_LOADING', payload: false });
         }
-    };
+    }, [state.isAuthenticated]);
 
     // --- Action Function 6: Remove Item from Cart ---
     const removeItemFromCart = async (productId) => {
         dispatch({ type: 'SET_LOADING', payload: true });
         try {
-            // Assumes backend route: DELETE /api/cart/:productId
-            const response = await axios.delete(`/api/cart/${productId}`, getConfig());
+            // Backend route: DELETE /api/carts/:productId
+            const response = await axios.delete(`/api/carts/${productId}`, getConfig());
             dispatch({ type: 'SET_CART', payload: response.data });
         } catch (error) {
             const message = error.response?.data?.message || 'Failed to remove item.';

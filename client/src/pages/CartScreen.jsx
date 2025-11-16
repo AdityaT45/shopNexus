@@ -1,7 +1,6 @@
 import React, { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-
 function CartScreen() {
     const navigate = useNavigate();
     
@@ -30,7 +29,7 @@ function CartScreen() {
             console.error(error);
         }
         
-    }, [isAuthenticated, error, fetchCart]); // Depend on isAuthenticated and fetchCart (if using functional dependency array)
+    }, [isAuthenticated, error]); // Only depend on isAuthenticated and error
 
 
     // Handler to update the quantity of an item
@@ -54,7 +53,7 @@ function CartScreen() {
     
     if (cartItems.length > 0) {
         subtotal = cartItems.reduce((acc, item) => 
-            acc + item.product.price * item.quantity, 0
+            acc + (item.product?.price || 0) * item.quantity, 0
         ).toFixed(2);
     }
 
@@ -89,26 +88,26 @@ function CartScreen() {
                 
                 {/* === Cart Items Column === */}
                 <div className='col-md-8'>
-                    {cartItems.map((item) => (
-                        <div key={item.product._id} className='card mb-3 p-3'>
+                    {cartItems.map((item, index) => (
+                        <div key={item.product?._id || `cart-item-${index}`} className='card mb-3 p-3'>
                             <div className='row align-items-center'>
                                 <div className='col-md-2'>
-                                    <img src={item.product.image} alt={item.product.name} className='img-fluid rounded' />
+                                    <img src={item.product?.image || ''} alt={item.product?.name || 'Product'} className='img-fluid rounded' />
                                 </div>
                                 <div className='col-md-5'>
-                                    <a href={`/products/${item.product._id}`}>{item.product.name}</a>
+                                    <a href={`/products/${item.product?._id}`}>{item.product?.name || 'Unknown Product'}</a>
                                 </div>
                                 <div className='col-md-2'>
-                                    ${(item.product.price * item.quantity).toFixed(2)}
+                                    ${((item.product?.price || 0) * item.quantity).toFixed(2)}
                                 </div>
                                 <div className='col-md-3'>
                                     {/* Quantity Selector */}
                                     <select 
                                         value={item.quantity} 
-                                        onChange={(e) => updateQuantityHandler(item.product._id, Number(e.target.value))}
+                                        onChange={(e) => updateQuantityHandler(item.product?._id, Number(e.target.value))}
                                         className='form-select'
                                     >
-                                        {[...Array(item.product.countInStock).keys()].map((x) => (
+                                        {[...Array(item.product?.countInStock || 1).keys()].map((x) => (
                                             <option key={x + 1} value={x + 1}>{x + 1}</option>
                                         ))}
                                     </select>
@@ -116,7 +115,7 @@ function CartScreen() {
                                     {/* Remove Button */}
                                     <button 
                                         className='btn btn-sm btn-outline-danger mt-2 w-100'
-                                        onClick={() => removeHandler(item.product._id)}
+                                        onClick={() => removeHandler(item.product?._id)}
                                     >
                                         Remove
                                     </button>

@@ -13,7 +13,15 @@ function Register() {
 
     useEffect(() => {
         if (error) { alert(error); }
-        if (isAuthenticated) { navigate("/"); }
+        if (isAuthenticated) {
+            const stored = JSON.parse(localStorage.getItem('user'));
+            // New registrations are typically users, but check just in case
+            if (stored?.role === 'Admin' || stored?.isAdmin) {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/dashboard');
+            }
+        }
     }, [isAuthenticated, error, navigate]);
 
     const onChange = (e) => {

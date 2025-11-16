@@ -8,7 +8,7 @@ function Header() {
     // 🔑 CONTEXT: Consume state and action
     const { user, logoutUser, cart } = useContext(AppContext);
     
-    const cartItemCount = cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
+    const cartItemCount = cart?.items?.reduce((acc, item) => acc + (item.quantity || 0), 0) || 0;
 
     const onLogout = () => {
         logoutUser(); 
@@ -36,6 +36,9 @@ function Header() {
                                     {user.name}
                                 </Link>
                                 <ul className='dropdown-menu dropdown-menu-dark'>
+                                    {(user.isAdmin || user.role === 'Admin') && (
+                                        <li><Link className='dropdown-item' to='/admin/users'>Admin</Link></li>
+                                    )}
                                     <li><Link className='dropdown-item' to='/myorders'>My Orders</Link></li>
                                     <li><hr className='dropdown-divider' /></li>
                                     <li><button className='dropdown-item' onClick={onLogout}>Logout</button></li>

@@ -57,7 +57,7 @@ function CheckoutScreen() {
     
     // Calculate total price for display
     const total = cart?.items?.reduce((acc, item) => 
-        acc + item.product.price * item.quantity, 0
+        acc + (item.product?.price || 0) * item.quantity, 0
     ).toFixed(2);
 
 
@@ -98,11 +98,11 @@ function CheckoutScreen() {
                     <div className='card p-4 bg-light'>
                         <h3>Order Summary</h3>
                         <hr />
-                        {cart?.items?.map(item => (
+                        {cart?.items?.map((item, index) => (
                             // Key prop added here for stability
-                            <div key={item.product._id} className='d-flex justify-content-between mb-1'> 
-                                <span>{item.product.name} ({item.quantity})</span>
-                                <span>${(item.product.price * item.quantity).toFixed(2)}</span>
+                            <div key={item.product?._id || `checkout-item-${index}`} className='d-flex justify-content-between mb-1'> 
+                                <span>{item.product?.name || 'Unknown Product'} ({item.quantity})</span>
+                                <span>${((item.product?.price || 0) * item.quantity).toFixed(2)}</span>
                             </div>
                         ))}
                         <hr />

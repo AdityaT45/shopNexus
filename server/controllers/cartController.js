@@ -2,10 +2,10 @@ const Cart = require('../models/Cart');
 const Product = require('../models/Product'); // Needed for stock check
 
 
-const addToCart=async(req,res)=>{
+const addToCart = async (req, res) => {
     try {
-        const {productId,quantity}=req.body
-        const userId =req.user.id
+        const { productId, quantity } = req.body
+        const userId = req.user._id
 
         // 1. Validate quantity and check if product exists and is in stock
         const product = await Product.findById(productId);
@@ -28,7 +28,7 @@ const addToCart=async(req,res)=>{
 
             if (itemIndex > -1) {
                 // Item found: Update quantity
-                cart.items[itemIndex].quantity = quantity; 
+                cart.items[itemIndex].quantity = quantity;
             } else {
                 // Item not found: Add new item
                 cart.items.push({ product: productId, quantity });
@@ -38,21 +38,21 @@ const addToCart=async(req,res)=>{
 
         // 3. Success response
         res.status(200).json(cart);
-        
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Failed to add item to cart.' });        
+        res.status(500).json({ message: 'Failed to add item to cart.' });
     }
 }
 
 
-const getCart=async(req,res)=>{
+const getCart = async (req, res) => {
     try {
         const userId = req.user._id;
 
         // Find the cart and populate the product details for each item
         const cart = await Cart.findOne({ user: userId })
-                                .populate('items.product'); 
+            .populate('items.product');
 
         if (!cart) {
             // Return an empty cart structure if none is found
@@ -60,19 +60,19 @@ const getCart=async(req,res)=>{
         }
 
         res.status(200).json(cart);
-        
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to fetch cart.' });
     }
 }
 
-const clearCart =async(req,res)=>{
+const clearCart = async (req, res) => {
     try {
         const userId = req.user._id;
 
         // Find the cart by user ID and delete the entire document
-        const result = await Cart.findOneAndDelete({ user: userId }); 
+        const result = await Cart.findOneAndDelete({ user: userId });
 
         if (result) {
             // Successful deletion
@@ -82,8 +82,8 @@ const clearCart =async(req,res)=>{
             res.status(200).json({ message: 'Cart was already empty.' });
         }
 
-      
-        
+
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to clear cart.' });
@@ -116,4 +116,4 @@ const removeItemFromCart = async (req, res) => {
     }
 };
 
-module.exports={addToCart,getCart,clearCart,removeItemFromCart }
+module.exports = { addToCart, getCart, clearCart, removeItemFromCart }
