@@ -20,12 +20,29 @@ const userRouter=require('./routes/userRoutes')
 const productRouter=require('./routes/productRoutes')
 const cartRouter=require('./routes/cartRoutes')
 const orderRouter=require('./routes/orderRoutes')
+const bannerRouter=require('./routes/bannerRoutes')
+const categoryRouter=require('./routes/categoryRoutes')
+const uploadRoutes = require("./routes/uploadRoutes");
+
+
 
 app.use('/api/auth',authRouter)
 app.use('/api/users',userRouter)
 app.use('/api/products',productRouter)
 app.use('/api/carts',cartRouter)
 app.use('/api/orders',orderRouter)
+app.use('/api/banners',bannerRouter)
+app.use('/api/categories',categoryRouter)
+app.use("/api/upload", uploadRoutes);
+
+
+const path = require("path");
+app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+
+
+
+
+
 
 // 5. Define a port and start the server
 const PORT = process.env.PORT || 5000;

@@ -8,6 +8,7 @@ export const adminInitialState = {
     users: [],
     allOrders: [],
     adminProducts: [],
+    categories: [],
 
     // --- State Management ---
     // Initialize isUserAdmin based on user data, defaulting to false if no user is found

@@ -3,7 +3,7 @@ import React, { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminContext } from '../../context/AdminContext'; 
 import AdminSidebar from '../../component/Admin/AdminSidebar';
-// import AdminSidebar from '../../components/AdminSidebar'; 
+ 
 
 function AdminProductListScreen() {
     const navigate = useNavigate();
@@ -39,12 +39,9 @@ function AdminProductListScreen() {
     }
 
     return (
-        <div className='container mt-5'>
-            <div className='row'>
-                <div className='col-md-3'>
-                    <AdminSidebar />
-                </div>
-                <div className='col-md-9'>
+        <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
+            <AdminSidebar />
+            <div className='p-4 admin-content' style={{ marginLeft: '280px' }}>
                     <div className='d-flex justify-content-between align-items-center mb-4'>
                         <h1>Product Management</h1>
                         <button className='btn btn-success' onClick={handleCreate}>
@@ -59,6 +56,7 @@ function AdminProductListScreen() {
                             <tr>
                                 <th>ID (last 4)</th>
                                 <th>Name</th>
+                                <th>image</th>
                                 <th>Price</th>
                                 <th>Category</th>
                                 <th>Count</th>
@@ -70,7 +68,17 @@ function AdminProductListScreen() {
                                 <tr key={product._id}>
                                     <td>{product._id.substring(product._id.length - 4)}</td>
                                     <td>{product.name}</td>
-                                    <td>${product.price.toFixed(2)}</td>
+                                    <td>
+                                        <img 
+                                            src={(product.images && product.images.length > 0) ? product.images[0] : (product.image || 'https://via.placeholder.com/50x50?text=No+Img')} 
+                                            alt={product.name} 
+                                            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                            onError={(e) => {
+                                                e.target.src = 'https://via.placeholder.com/50x50?text=Error';
+                                            }}
+                                        />
+                                    </td>
+                                    <td>₹ {product.price.toFixed(2)}</td>
                                     <td>{product.category}</td>
                                     <td>{product.countInStock}</td>
                                     <td>
@@ -92,10 +100,10 @@ function AdminProductListScreen() {
                             ))}
                         </tbody>
                     </table>
-                </div>
             </div>
         </div>
     );
 }
+
 
 export default AdminProductListScreen;

@@ -92,13 +92,24 @@ function CartScreen() {
                         <div key={item.product?._id || `cart-item-${index}`} className='card mb-3 p-3'>
                             <div className='row align-items-center'>
                                 <div className='col-md-2'>
-                                    <img src={item.product?.image || ''} alt={item.product?.name || 'Product'} className='img-fluid rounded' />
+                                    <img 
+                                        src={
+                                            (item.product?.images && item.product.images.length > 0)
+                                                ? item.product.images[0]
+                                                : (item.product?.image || 'https://via.placeholder.com/100x100?text=No+Image')
+                                        } 
+                                        alt={item.product?.name || 'Product'} 
+                                        className='img-fluid rounded'
+                                        onError={(e) => {
+                                            e.target.src = 'https://via.placeholder.com/100x100?text=Image+Error';
+                                        }}
+                                    />
                                 </div>
                                 <div className='col-md-5'>
                                     <a href={`/products/${item.product?._id}`}>{item.product?.name || 'Unknown Product'}</a>
                                 </div>
                                 <div className='col-md-2'>
-                                    ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                                    ₹ {((item.product?.price || 0) * item.quantity).toFixed(2)}
                                 </div>
                                 <div className='col-md-3'>
                                     {/* Quantity Selector */}
@@ -129,7 +140,7 @@ function CartScreen() {
                 <div className='col-md-4'>
                     <div className='card p-3 bg-light'>
                         <h4>Subtotal ({cartItems.reduce((acc, item) => acc + item.quantity, 0)}) items</h4>
-                        <h2>Total: ${subtotal}</h2>
+                        <h2>Total: ₹ {subtotal}</h2>
                         <button 
                             className='btn btn-success mt-3' 
                             onClick={checkoutHandler}

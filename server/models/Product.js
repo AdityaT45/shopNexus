@@ -25,10 +25,19 @@ const productSchema = mongoose.Schema(
             type: String,
             required: true,
         },
-        image: { // For the public image URL
+        subcategory: {
             type: String,
-            required: true, 
-            // In a real app, this would be Cloudinary ID or similar
+            default: '',
+        },
+        images: { // Array of image URLs for product gallery
+            type: [String],
+            required: true,
+            validate: {
+                validator: function(v) {
+                    return v && v.length > 0; // At least one image required
+                },
+                message: 'At least one image is required'
+            }
         },
     },
     {

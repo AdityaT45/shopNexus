@@ -102,13 +102,13 @@ function CheckoutScreen() {
                             // Key prop added here for stability
                             <div key={item.product?._id || `checkout-item-${index}`} className='d-flex justify-content-between mb-1'> 
                                 <span>{item.product?.name || 'Unknown Product'} ({item.quantity})</span>
-                                <span>${((item.product?.price || 0) * item.quantity).toFixed(2)}</span>
+                                <span>₹ {((item.product?.price || 0) * item.quantity).toFixed(2)}</span>
                             </div>
                         ))}
                         <hr />
                         <h4 className='d-flex justify-content-between'>
                             <span>Total:</span>
-                            <strong>${total}</strong>
+                            <strong>₹ {total}</strong>
                         </h4>
                     </div>
                 </div>

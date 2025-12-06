@@ -6,15 +6,27 @@ const Product=require('../models/Product')
 const createProduct =async(req,res)=>{
 
     try {
-    const { name,description,price,countInStock,category,image } = req.body;
+    const { name,description,price,countInStock,category,subcategory,images,image } = req.body;
 
-    if (!name || !description || !price  || !category  || !image) {
-        return res.status(400).json({ message: 'Please enter all fields.' });
+    // Handle both old format (single image) and new format (images array)
+    let productImages = images;
+    if (!productImages && image) {
+        // Backward compatibility: if images array not provided but single image is, convert it
+        productImages = [image];
+    }
+
+    if (!name || !description || !price  || !category  || !productImages || productImages.length === 0) {
+        return res.status(400).json({ message: 'Please enter all fields. At least one image is required.' });
+    }
+
+    // Ensure images is an array
+    if (!Array.isArray(productImages)) {
+        productImages = [productImages];
     }
 
     // 2. Create the product document and save it to MongoDB
     const product= await Product.create({
-        name,description,price,countInStock,category,image
+        name,description,price,countInStock,category,subcategory: subcategory || '',images: productImages
     });
     // 3. Success response
         res.status(201).json(product);
@@ -35,6 +47,28 @@ let getAllProducts= async(req,res)=>{
     }
 }
 
+
+const getProductById=async(req,res)=>{
+    try {
+        const productId =await Product.findById(req.params.id);
+
+        if (!productId) {
+            return res.status(404).json({ message: 'Product not found.' });
+           
+        }
+        res.status(200).json(productId);
+
+    } catch (error) {
+        console.error(error);
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: 'Invalid product ID.' });
+        }
+
+        res.status(500).json({ message: 'Failed to fetch product details.' });
+    }
+}
+
 const updateProduct =async(req,res)=>{
     try {
         const productId = req.params.id;
@@ -47,11 +81,26 @@ const updateProduct =async(req,res)=>{
             // 2. Update all fields present in the request body
             // We use the || operator to keep the old value if the new value is not provided
             product.name = updates.name || product.name;
-            product.price = updates.price || product.price;
+            product.price = updates.price !== undefined ? updates.price : product.price;
             product.description = updates.description || product.description;
-            product.countInStock = updates.countInStock || product.countInStock;
+            product.countInStock = updates.countInStock !== undefined ? updates.countInStock : product.countInStock;
             product.category = updates.category || product.category;
-            product.image = updates.image || product.image;
+            product.subcategory = updates.subcategory !== undefined ? updates.subcategory : product.subcategory;
+            
+            // Handle images array update with backward compatibility
+            if (updates.images !== undefined) {
+                // New format: images array
+                if (Array.isArray(updates.images) && updates.images.length > 0) {
+                    product.images = updates.images;
+                } else if (typeof updates.images === 'string' && updates.images.trim()) {
+                    // Single string provided, convert to array
+                    product.images = [updates.images];
+                }
+            } else if (updates.image) {
+                // Backward compatibility: old format with single image field
+                product.images = [updates.image];
+            }
+            // If neither images nor image is provided, keep existing images array
 
             // 3. Save the updated product back to the database
             const updatedProduct = await product.save();
@@ -97,7 +146,7 @@ const deleteProduct=async(req,res)=>{
 
 const getPublicProducts = async (req, res) => {
     try {
-        const { keyword, category } = req.query; // Destructure query parameters
+        const { keyword, category, subcategory } = req.query; // Destructure query parameters
         
         // 1. Start with the essential filter: in stock products only
         const filter = { 
@@ -118,7 +167,12 @@ const getPublicProducts = async (req, res) => {
             filter.category = category;
         }
 
-        // 4. Execute the dynamic query
+        // 4. Add subcategory filter if provided
+        if (subcategory) {
+            filter.subcategory = subcategory;
+        }
+
+        // 5. Execute the dynamic query
         const products = await Product.find(filter); 
         
         res.status(200).json(products);
@@ -152,4 +206,4 @@ const getPublicProductDetails =async(req,res)=>{
         res.status(400).json({ message: 'Invalid product ID format.' });
     }
 }
-module.exports={createProduct,getAllProducts,updateProduct,deleteProduct,getPublicProducts ,getPublicProductDetails}
+module.exports={createProduct,getAllProducts,getProductById,updateProduct,deleteProduct,getPublicProducts ,getPublicProductDetails}

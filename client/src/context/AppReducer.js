@@ -32,6 +32,10 @@ export const initialState = {
   // Order State
   lastOrder: null,
   myOrders: [],
+
+  // Category State
+  categories: [],
+  activeBanners: [],
 };
 
 // The central Reducer function
@@ -54,6 +58,14 @@ export const AppReducer = (state, action) => {
         user: null,
         isAuthenticated: false,
         error: action.payload,
+      };
+    case "UPDATE_USER":
+      const updatedUser = { ...state.user, ...action.payload };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      return {
+        ...state,
+        user: updatedUser,
+        error: null,
       };
     case "LOGOUT":
       localStorage.removeItem("user");
@@ -107,6 +119,22 @@ export const AppReducer = (state, action) => {
       return {
         ...state,
         myOrders: action.payload,
+        error: null,
+      };
+
+    //banner actions can be added here in future
+    case "ACTIVE_FETCH_BANNERS_SUCCESS":
+      return {
+        ...state,
+        activeBanners: action.payload,
+        error: null,
+      };
+
+    // Category Actions
+    case "SET_CATEGORIES":
+      return {
+        ...state,
+        categories: action.payload,
         error: null,
       };
 

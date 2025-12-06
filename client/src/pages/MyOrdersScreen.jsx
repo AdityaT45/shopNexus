@@ -26,19 +26,29 @@ function MyOrdersScreen() {
                     {myOrders.map((order) => (
                         <div key={order._id} className='list-group-item list-group-item-action mb-3'>
                             <div className='d-flex w-100 justify-content-between'>
-                                <h5 className='mb-1'>Order ID: {order._id.substring(18)}</h5>
+                                <h5 className='mb-1'>Order ID: {order._id}</h5>
                                 <small className='text-muted'>
                                     Placed: {new Date(order.createdAt).toLocaleDateString()}
                                 </small>
                             </div>
                             <p className='mb-1'>
-                                Status: <span className={`badge bg-${order.status === 'Delivered' ? 'success' : 'warning'}`}>{order.status}</span>
+                                Status: <span className={`badge bg-${order.status === 'Pending'
+        ? 'warning'
+        : order.status === 'Shipped'
+        ? 'primary'
+        : order.status === 'Delivered'
+        ? 'success'
+        : 'secondary' // fallback
+    }`}
+>
+    {order.status}
+</span>
                             </p>
                             <p className='mb-1'>
                                 Items: {order.items ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0} total
                             </p>
                             <p className='mb-1'>
-                                **Total: $ {order.totalPrice.toFixed(2)}**
+                                **Total: ₹ {order.totalPrice.toFixed(2)}**
                             </p>
                         </div>
                     ))}

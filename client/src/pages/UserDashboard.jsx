@@ -1,29 +1,20 @@
 // client/src/pages/UserDashboard.jsx
-import React, { useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useContext, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import ProductItem from '../component/ProductItem';
+import CategoryNavigation from '../component/CategoryNavigation';
 
 function UserDashboard() {
     const navigate = useNavigate();
+    const [urlSearchParams] = useSearchParams();
     // 🔑 CONTEXT: Consume state and actions
-    const { products, fetchProducts, isLoading, error, user, myOrders, fetchMyOrders, cart } = useContext(AppContext);
-
-    // Local state for search/filter
-    const [searchParams, setSearchParams] = React.useState({
-        keyword: '',
-        category: '',
-    });
-
-    const { keyword, category } = searchParams;
-
-    // Handler to update the search state
-    const handleSearchChange = (e) => {
-        setSearchParams({
-            ...searchParams,
-            [e.target.name]: e.target.value,
-        });
-    };
+    const { products, fetchProducts, isLoading, error, user, myOrders, fetchMyOrders, cart, fetchActiveBanners, activeBanners, categories, fetchCategories } = useContext(AppContext);
+    
+    // Get search params from URL
+    const keyword = urlSearchParams.get('keyword') || '';
+    const category = urlSearchParams.get('category') || '';
+    const subcategory = urlSearchParams.get('subcategory') || '';
 
     // Fetch products whenever the component mounts OR search/filter parameters change
     useEffect(() => {
@@ -35,10 +26,12 @@ function UserDashboard() {
         let queryString = '';
         if (keyword) { queryString += `?keyword=${keyword}`; }
         if (category) { queryString += `${queryString ? '&' : '?'}category=${category}`; }
+        if (subcategory) { queryString += `${queryString ? '&' : '?'}subcategory=${subcategory}`; }
         
         // 2. 🔑 ACTION: Call context action with the query string
         fetchProducts(queryString);
-    }, [keyword, category]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [keyword, category, subcategory]);
 
     // Fetch user's orders
     useEffect(() => {
@@ -50,13 +43,90 @@ function UserDashboard() {
 
     const cartItemCount = cart?.items?.reduce((acc, item) => acc + (item.quantity || 0), 0) || 0;
 
+    useEffect(() => {
+        fetchActiveBanners();
+        fetchCategories();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     if (isLoading && products.length === 0) {
         return <h2 className='text-center mt-5'>Loading Dashboard...</h2>;
     }
 
+
+
     return (
-        <div className='container mt-5'>
-            <h1 className='mb-4'>Welcome back, {user?.name}!</h1>
+        <>
+            {/* Category Navigation Bar */}
+            <CategoryNavigation />
+            
+            <div className='container mt-4'>
+            {/* Banners Section */}
+            <div className="mb-4">
+  {activeBanners && activeBanners.length > 0 ? (
+    <div id="bannerCarousel" className="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+
+      {/* Indicators */}
+      <div className="carousel-indicators">
+        {activeBanners.map((banner, index) => (
+          <button
+            key={banner._id}
+            type="button"
+            data-bs-target="#bannerCarousel"
+            data-bs-slide-to={index}
+            className={index === 0 ? "active" : ""}
+            aria-current={index === 0 ? "true" : "false"}
+          ></button>
+        ))}
+      </div>
+
+      {/* Carousel images */}
+      <div className="carousel-inner">
+        {activeBanners.map((banner, index) => (
+          <div
+            key={banner._id}
+            className={`carousel-item ${index === 0 ? "active" : ""}`}
+          >
+            <img
+              src={banner.image}
+              className="d-block w-100 rounded"
+              alt={banner.title}
+              style={{ height: "350px", objectFit: "cover" }}
+            />
+            <div className="carousel-caption d-none d-md-block">
+              <h5>{banner.title}</h5>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Controls */}
+      <button
+        className="carousel-control-prev"
+        type="button"
+        data-bs-target="#bannerCarousel"
+        data-bs-slide="prev"
+      >
+        <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+      </button>
+
+      <button
+        className="carousel-control-next"
+        type="button"
+        data-bs-target="#bannerCarousel"
+        data-bs-slide="next"
+      >
+        <span className="carousel-control-next-icon" aria-hidden="true"></span>
+      </button>
+
+    </div>
+  ) : (
+    <p>No active banners</p>
+  )}
+</div>
+
+
+            <h1 className='mb-4'>Welcome back, {user?.name || 'Guest'}!</h1>
 
             {/* User Statistics */}
             <div className='row mb-4'>
@@ -102,32 +172,6 @@ function UserDashboard() {
             <div className='mb-4'>
                 <h2 className='mb-3'>Latest Products</h2>
 
-                {/* SEARCH AND FILTER FORM */}
-                <div className="row mb-4 bg-light p-3 rounded">
-                    <div className="col-md-6 mb-2">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Search products..."
-                            name="keyword"
-                            value={keyword}
-                            onChange={handleSearchChange}
-                        />
-                    </div>
-                    <div className="col-md-6 mb-2">
-                        <select
-                            className="form-select"
-                            name="category"
-                            value={category}
-                            onChange={handleSearchChange}
-                        >
-                            <option value="">All Categories</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Apparel">Apparel</option>
-                            <option value="Books">Books</option>
-                        </select>
-                    </div>
-                </div>
                 
                 {/* Product Grid */}
                 {products.length === 0 ? (
@@ -140,7 +184,58 @@ function UserDashboard() {
                     </div>
                 )}
             </div>
-        </div>
+
+            {/* SHOP BY CATEGORY Section */}
+            {categories && categories.length > 0 && (
+                <div className='mb-4'>
+                    <div className='d-flex justify-content-between align-items-center mb-3'>
+                        <h2>Shop by Category</h2>
+                        <button 
+                            className='btn btn-outline-primary'
+                            onClick={() => navigate('/categories')}
+                        >
+                            View All Categories <i className='fas fa-arrow-right ms-1'></i>
+                        </button>
+                    </div>
+                    <div className='row'>
+                        {categories.slice(0, 8).map((category) => (
+                            <div key={category._id} className='col-md-3 col-6 mb-3'>
+                                <div 
+                                    className='card h-100 shadow-sm'
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => {
+                                        setSelectedCategory(category.name);
+                                        setSearchParams({
+                                            ...searchParams,
+                                            category: category.name
+                                        });
+                                    }}
+                                >
+                                    <img
+                                        src={category.image}
+                                        alt={category.name}
+                                        className='card-img-top'
+                                        style={{ height: '150px', objectFit: 'cover' }}
+                                        onError={(e) => {
+                                            e.target.src = 'https://via.placeholder.com/300x150?text=Category';
+                                        }}
+                                    />
+                                    <div className='card-body text-center'>
+                                        <h6 className='card-title mb-0'>{category.name}</h6>
+                                        {category.subcategories && category.subcategories.length > 0 && (
+                                            <small className='text-muted'>
+                                                {category.subcategories.length} subcategories
+                                            </small>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            </div>
+        </>
     );
 }
 

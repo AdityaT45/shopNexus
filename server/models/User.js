@@ -21,6 +21,15 @@ const userSchema = mongoose.Schema(
             required: true,
             enum: ['User', 'Admin', 'Super Admin'], // Limits the possible values
             default: 'User',
+        },
+        photo: {
+            type: String,
+            default: ''
+        },
+        gender: {
+            type: String,
+            enum: ['Male', 'Female', 'Other', ''],
+            default: ''
         }
     },
     {

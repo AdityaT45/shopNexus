@@ -20,6 +20,9 @@ function ProductScreen() {
     // State for cart quantity selection
     const [quantity, setQuantity] = useState(1);
     
+    // State for selected main image (gallery feature)
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    
     // Fetch product details on component load or ID change
     useEffect(() => {
         // 🔑 ACTION: Call context action to fetch details
@@ -54,18 +57,80 @@ function ProductScreen() {
     if (isLoading) { return <h2 className='text-center mt-5'>Loading Product Details...</h2>; }
     if (error || !productDetails) { return <h2 className='text-center mt-5 text-danger'>{error || 'Product details could not be loaded.'}</h2>; }
 
-    const product = productDetails; 
+    const product = productDetails;
+    
+    // Handle both old format (single image) and new format (images array)
+    const productImages = product.images && product.images.length > 0 
+        ? product.images 
+        : (product.image ? [product.image] : []);
+    
+    // Ensure selectedImageIndex is valid
+    const mainImage = productImages[selectedImageIndex] || productImages[0] || '';
 
     return (
         <div className='container mt-5'>
             <div className='row'>
                 <div className='col-md-6 mb-4'>
-                    <img src={product.image} alt={product.name} className='img-fluid rounded' />
+                    {/* Main Large Image */}
+                    <div className='mb-3'>
+                        <img 
+                            src={mainImage} 
+                            alt={product.name} 
+                            className='img-fluid rounded border'
+                            style={{ width: '100%', height: '500px', objectFit: 'contain', backgroundColor: '#f8f9fa' }}
+                            onError={(e) => {
+                                e.target.src = 'https://via.placeholder.com/500x500?text=Image+Not+Available';
+                            }}
+                        />
+                    </div>
+                    
+                    {/* Thumbnail Gallery */}
+                    {productImages.length > 1 && (
+                        <div className='d-flex gap-2 flex-wrap'>
+                            {productImages.map((imgUrl, index) => (
+                                <div
+                                    key={index}
+                                    className={`border rounded p-1 cursor-pointer ${selectedImageIndex === index ? 'border-primary border-3' : 'border-secondary'}`}
+                                    style={{ 
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        opacity: selectedImageIndex === index ? 1 : 0.7
+                                    }}
+                                    onClick={() => setSelectedImageIndex(index)}
+                                    onMouseEnter={(e) => {
+                                        if (selectedImageIndex !== index) {
+                                            e.currentTarget.style.opacity = '1';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (selectedImageIndex !== index) {
+                                            e.currentTarget.style.opacity = '0.7';
+                                        }
+                                    }}
+                                >
+                                    <img
+                                        src={imgUrl}
+                                        alt={`${product.name} view ${index + 1}`}
+                                        className='rounded'
+                                        style={{
+                                            width: '80px',
+                                            height: '80px',
+                                            objectFit: 'cover',
+                                            display: 'block'
+                                        }}
+                                        onError={(e) => {
+                                            e.target.src = 'https://via.placeholder.com/80x80?text=Error';
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 <div className='col-md-6'>
                     <h2>{product.name}</h2>
                     <hr />
-                    <p className='lead'><strong>Price:</strong> ${product.price.toFixed(2)}</p>
+                    <p className='lead'><strong>Price:</strong> ₹ {product.price.toFixed(2)}</p>
                     <p><strong>Description:</strong> {product.description}</p>
                     <hr />
 

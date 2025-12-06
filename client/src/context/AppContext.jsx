@@ -67,6 +67,17 @@ export const AppProvider = ({ children }) => {
         }
     };
 
+    // 🔑 Function: Update User Profile
+    const updateUser = (userData) => {
+        dispatch({ type: 'UPDATE_USER', payload: userData });
+        // Also update localStorage
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        if (storedUser) {
+            const updatedUser = { ...storedUser, ...userData };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+    };
+
     // 🔑 Function 3: Fetch Public Products
     const fetchProducts = async (query = '') => {
         dispatch({ type: 'SET_LOADING', payload: true });
@@ -81,6 +92,20 @@ export const AppProvider = ({ children }) => {
         }
     };
 
+    const getProductById = useCallback(async (id) => {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        try {
+            const response = await axios.get(`/api/products/${id}`, getConfig());
+            dispatch({ type: 'SET_PRODUCT_DETAILS', payload: response.data });
+            return response.data;
+        } catch (error) {
+            const message = error.response?.data?.message || 'Product not found.';
+            dispatch({ type: 'SET_ERROR', payload: message });
+            throw error;
+        } finally {
+            dispatch({ type: 'SET_LOADING', payload: false });
+        }
+    }, []);
 
     const fetchProductDetails = async (id) => {
         dispatch({ type: 'SET_LOADING', payload: true });
@@ -175,6 +200,32 @@ export const AppProvider = ({ children }) => {
     };
 
 
+ const fetchActiveBanners = async () => {
+  try {
+    dispatch({ type: "FETCH_BANNERS_REQUEST" });
+
+    const { data } = await axios.get("/api/banners/public/active", getConfig());
+    dispatch({ type: "ACTIVE_FETCH_BANNERS_SUCCESS", payload: data });
+
+  } catch (error) {
+    dispatch({
+      type: "FETCH_BANNERS_FAIL",
+      payload: error.response?.data?.message || error.message,
+    });
+  }
+};
+
+    // Fetch Public Categories (Active only)
+    const fetchCategories = async () => {
+        try {
+            const response = await axios.get('/api/categories/public');
+            dispatch({ type: 'SET_CATEGORIES', payload: response.data });
+        } catch (error) {
+            console.error('Failed to fetch categories:', error);
+        }
+    };
+
+
     return (
         <AppContext.Provider
             value={{
@@ -185,6 +236,8 @@ export const AppProvider = ({ children }) => {
                 loginUser,
                 logoutUser,
                 registerUser,
+                updateUser,
+                getProductById,
                 fetchProducts,
                 fetchProductDetails,
                 updateCart,
@@ -192,6 +245,8 @@ export const AppProvider = ({ children }) => {
                 removeItemFromCart,
                 createNewOrder,
                 fetchMyOrders,
+                fetchActiveBanners,
+                fetchCategories,
 
             }}
         >

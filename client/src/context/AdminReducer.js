@@ -54,23 +54,23 @@ export const AdminReducer = (state, action) => {
                 adminError: null,
             };
             
-        case 'UPDATE_USER_ROLE':
-            return {
-                ...state,
-                users: state.users.map(user => 
-                    user._id === action.payload._id ? action.payload : user
-                ),
-                adminLoading: false,
-                adminError: null,
-            };
+        case "UPDATE_USER_ROLE":
+    return {
+        ...state,
+        users: state.users.map(u =>
+            u._id === action.payload.userId
+                ? { ...u, role: action.payload.newRole }
+                : u
+        )
+    };
             
-        case 'DELETE_USER':
-            return {
-                ...state,
-                users: state.users.filter(user => user._id !== action.payload),
-                adminLoading: false,
-                adminError: null,
-            };
+        case "DELETE_USER":
+    return {
+        ...state,
+        users: state.users.filter(user => user._id !== action.payload),
+        adminLoading: false,
+        adminError: null,
+    };
 
         case 'ADMIN_LOGOUT':
              // Reset admin-specific state upon logout
@@ -79,7 +79,60 @@ export const AdminReducer = (state, action) => {
                 isUserAdmin: false,
             };
 
+            case "SET_ADMIN_BANNERS":
+    return {
+        ...state,
+        adminBanners: action.payload,
+        adminLoading: false,
+        adminError: null
+    };
+
+case "DELETE_BANNER":
+    return {
+        ...state,
+        adminBanners: state.adminBanners.filter(b => b._id !== action.payload),
+        adminLoading: false
+    };
+
+        case 'SET_CATEGORIES':
+            return {
+                ...state,
+                categories: action.payload,
+                adminLoading: false,
+                adminError: null,
+            };
+
+        case 'ADD_CATEGORY':
+            return {
+                ...state,
+                categories: [...state.categories, action.payload],
+                adminLoading: false,
+                adminError: null,
+            };
+
+        case 'UPDATE_CATEGORY':
+            return {
+                ...state,
+                categories: state.categories.map(cat =>
+                    cat._id === action.payload._id ? action.payload : cat
+                ),
+                adminLoading: false,
+                adminError: null,
+            };
+
+        case 'DELETE_CATEGORY':
+            return {
+                ...state,
+                categories: state.categories.filter(cat => cat._id !== action.payload),
+                adminLoading: false,
+                adminError: null,
+            };
+
         default:
             return state;
     }
 };
+
+
+
+

@@ -14,34 +14,21 @@ function AdminHeader() {
     };
 
     return (
-        <header className='navbar navbar-expand-lg navbar-dark bg-dark'>
-            <div className='container'>
+        <header className='navbar navbar-expand-lg navbar-dark bg-dark' style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1030 }}>
+            <div className='container-fluid'>
                 <Link className='navbar-brand' to='/admin/dashboard'>
                     ShopNexus - Admin
                 </Link>
-                <div className='collapse navbar-collapse'>
+                <button 
+                    className='navbar-toggler' 
+                    type='button' 
+                    data-bs-toggle='collapse' 
+                    data-bs-target='#adminNavbar'
+                >
+                    <span className='navbar-toggler-icon'></span>
+                </button>
+                <div className='collapse navbar-collapse' id='adminNavbar'>
                     <ul className='navbar-nav ms-auto'>
-                        <li className='nav-item'>
-                            <Link className='nav-link' to='/admin/dashboard'>
-                                Dashboard
-                            </Link>
-                        </li>
-                        <li className='nav-item'>
-                            <Link className='nav-link' to='/admin/users'>
-                                Users
-                            </Link>
-                        </li>
-                        <li className='nav-item'>
-                            <Link className='nav-link' to='/admin/products'>
-                                Products
-                            </Link>
-                        </li>
-                        <li className='nav-item'>
-                            <Link className='nav-link' to='/admin/orders'>
-                                Orders
-                            </Link>
-                        </li>
-                        
                         {user ? (
                             // LOGGED IN VIEW
                             <li className='nav-item dropdown'>

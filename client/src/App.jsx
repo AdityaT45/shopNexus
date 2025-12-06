@@ -24,6 +24,11 @@ import AdminProductListScreen from "./pages/Admin/AdminProductListScreen";
 import AdminProductEditScreen from "./pages/Admin/AdminProductEditScreen";
 import AdminRoute from "./component/Admin/AdminRoute";
 import { AppContext } from "./context/AppContext";
+import AdminBannerListScreen from "./pages/Admin/AdminBannerListScreen";
+import AdminBannerEditScreen from "./pages/Admin/AdminBannerEditScreen";
+import AdminCategoryListScreen from "./pages/Admin/AdminCategoryListScreen";
+import CategoriesScreen from "./pages/CategoriesScreen";
+import ProfileScreen from "./pages/ProfileScreen";
 
 // Component to conditionally render header based on route
 function ConditionalHeader() {
@@ -62,9 +67,11 @@ function App() {
               <Route path="/dashboard" element={<UserDashboard />} />
               <Route path="/" element={<UserDashboard />} />
               <Route path="/products/:id" element={<ProductScreen />} />
+              <Route path="/categories" element={<CategoriesScreen />} />
               <Route path="/cart" element={<CartScreen />} />
               <Route path="/checkout" element={<CheckoutScreen />} />
               <Route path="/myorders" element={<MyOrdersScreen />} />
+              <Route path="/profile" element={<ProfileScreen />} />
             </Route>
 
             {/* Admin Routes - Protected from Users */}
@@ -73,6 +80,10 @@ function App() {
               <Route path="/admin/users" element={<AdminUserListScreen />} />
               <Route path="/admin/orders" element={<AdminOrderListScreen />} />
               <Route path="/admin/products" element={<AdminProductListScreen />}/>
+              <Route path="/admin/categories" element={<AdminCategoryListScreen />}/>
+              <Route path="/admin/banners" element={<AdminBannerListScreen />}/>
+              <Route path="/admin/banner/create" element={<AdminBannerEditScreen />}/>
+              <Route path="/admin/banner/:id" element={<AdminBannerEditScreen />} />
               <Route path="/admin/product/new" element={<AdminProductEditScreen />}/>
               <Route path="/admin/product/:productId/edit" element={<AdminProductEditScreen />} />
             </Route>

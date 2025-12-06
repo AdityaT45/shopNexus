@@ -43,12 +43,9 @@ function AdminDashboard() {
     }
 
     return (
-        <div className='container mt-5'>
-            <div className='row'>
-                <div className='col-md-3'>
-                    <AdminSidebar />
-                </div>
-                <div className='col-md-9'>
+        <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
+            <AdminSidebar />
+            <div className='p-4 admin-content' style={{ marginLeft: '280px', paddingTop: '20px' }}>
                     <h1 className='mb-4'>Admin Dashboard</h1>
                     {adminError && <div className="alert alert-danger">{adminError}</div>}
                     
@@ -101,7 +98,7 @@ function AdminDashboard() {
                             <div className='card bg-info text-white'>
                                 <div className='card-body'>
                                     <h5 className='card-title'>Total Revenue</h5>
-                                    <h2>${totalRevenue.toFixed(2)}</h2>
+                                    <h2>₹ {totalRevenue.toFixed(2)}</h2>
                                 </div>
                             </div>
                         </div>
@@ -138,7 +135,7 @@ function AdminDashboard() {
                                                 <tr key={order._id}>
                                                     <td>{order._id.substring(order._id.length - 6)}</td>
                                                     <td>{order.user?.name || 'Deleted User'}</td>
-                                                    <td>${order.totalPrice.toFixed(2)}</td>
+                                                    <td>₹ {order.totalPrice.toFixed(2)}</td>
                                                     <td>
                                                         <span className={`badge bg-${order.status === 'Delivered' ? 'success' : order.status === 'Shipped' ? 'info' : 'warning'}`}>
                                                             {order.status}
@@ -153,7 +150,6 @@ function AdminDashboard() {
                             )}
                         </div>
                     </div>
-                </div>
             </div>
         </div>
     );

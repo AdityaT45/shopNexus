@@ -2,44 +2,41 @@ const express = require('express')
 const router = express.Router()
 
 const { protect, admin, superAdmin } = require('../middleware/authMiddleware');
-const { getUsers} = require('../controllers/userController');
+const {
+    getUserProfile,
+    updateUserProfile,
+    deleteUserAccount,
+    getAllUsers,
+    updateUserRole,
+    deleteUser
+} = require('../controllers/userController');
 
+// ================= USER PROFILE ==================
+router.get('/profile', protect, getUserProfile);
+router.put('/profile', protect, updateUserProfile);
+router.delete('/profile', protect, deleteUserAccount);
 
-router.get('/profile', protect, (req, res) => {
-    // If the 'protect' middleware passes, the user object is available at req.user
-    res.json({
-        _id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role,
-        message: 'Successfully retrieved profile data via token.'
-    });
-
-})
-
-// @access  Private/Admin only (requires both protect AND admin)
-router.get('/admin', protect, admin, (req, res) => {
-    res.json({
-        message: 'Welcome, Admin! Access granted.',
-        user: req.user.name,
-        role: req.user.role
-    });
-});
-
-// Admin-only user management
-router.get('/', protect, admin, getUsers);
-// router.put('/:userId/role', protect, admin, updateUserRole);
-// router.delete('/:userId', protect, admin, deleteUser);
-
-
-
-// @access  Private/Admin only (requires both protect AND admin)
+// ================= SUPER ADMIN ==================
 router.get('/superadmin', protect, superAdmin, (req, res) => {
     res.json({
-        message: 'Welcome, Super Admin! Access granted.',
+        message: 'Welcome, Super Admin!',
         user: req.user.name,
         role: req.user.role
     });
 });
+
+// ================= ADMIN ==================
+router.get('/admin', protect, admin, (req, res) => {
+    res.json({
+        message: 'Welcome, Admin!',
+        user: req.user.name,
+        role: req.user.role
+    });
+});
+
+// Admin-only user list (keep after admin)
+router.get('/', protect, admin, getAllUsers);
+router.put('/:id/role', protect, admin, updateUserRole);
+router.delete('/:id', protect, admin, deleteUser)
 
 module.exports = router;

@@ -41,32 +41,53 @@ export const AdminProvider = ({ children }) => {
     };
     
     // 🔑 A2. Update User Role (Admin/Not Admin)
-    const updateUserRole = async (userId, isAdmin) => {
-        dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
-        try {
-            const response = await axios.put(`/api/users/${userId}/role`, { isAdmin }, getConfig());
-            dispatch({ type: 'UPDATE_USER_ROLE', payload: response.data });
-        } catch (error) {
-            const message = error.response?.data?.message || 'Failed to update user role.';
-            dispatch({ type: 'SET_ADMIN_ERROR', payload: message });
-        } finally {
-            dispatch({ type: 'SET_ADMIN_LOADING', payload: false });
-        }
-    };
+   const updateUserRole = async (userId, newRole) => {
+    dispatch({ type: "SET_ADMIN_LOADING", payload: true });
 
-    // 🔑 A3. Delete User
-    const deleteUser = async (userId) => {
-        dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
-        try {
-            await axios.delete(`/api/users/${userId}`, getConfig());
-            dispatch({ type: 'DELETE_USER', payload: userId });
-        } catch (error) {
-            const message = error.response?.data?.message || 'Failed to delete user.';
-            dispatch({ type: 'SET_ADMIN_ERROR', payload: message });
-        } finally {
-            dispatch({ type: 'SET_ADMIN_LOADING', payload: false });
-        }
-    };
+    try {
+        const { data } = await axios.put(
+            `/api/users/${userId}/role`,
+            { role: newRole },
+            getConfig()
+        );
+
+        // Update user list in reducer
+        dispatch({
+            type: "UPDATE_USER_ROLE",
+            payload: { userId, newRole }
+        });
+
+    } catch (error) {
+        const message = error.response?.data?.message || "Failed to update user role.";
+        dispatch({ type: "SET_ADMIN_ERROR", payload: message });
+    } finally {
+        dispatch({ type: "SET_ADMIN_LOADING", payload: false });
+    }
+};
+
+
+const deleteUser = async (userId) => {
+    dispatch({ type: "SET_ADMIN_LOADING", payload: true });
+
+    try {
+        await axios.delete(`/api/users/${userId}`, getConfig());
+
+        // Update the UI
+        dispatch({
+            type: "DELETE_USER",
+            payload: userId
+        });
+
+    } catch (error) {
+        const message = error.response?.data?.message || "Failed to delete user.";
+        dispatch({ type: "SET_ADMIN_ERROR", payload: message });
+    } finally {
+        dispatch({ type: "SET_ADMIN_LOADING", payload: false });
+    }
+};
+
+
+
     
     // 🔑 A4. Fetch All Orders (for Admin)
     const fetchAllOrders = async () => {
@@ -114,7 +135,7 @@ export const AdminProvider = ({ children }) => {
         dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
         try {
             // Assuming your backend has an admin-specific endpoint for all products
-            const response = await axios.get('/api/products/admin', getConfig());
+            const response = await axios.get('/api/products', getConfig());
             dispatch({ type: 'SET_ADMIN_PRODUCTS', payload: response.data });
         } catch (error) {
             const message = error.response?.data?.message || 'Failed to fetch admin products.';
@@ -126,7 +147,7 @@ export const AdminProvider = ({ children }) => {
 
 
     //create product
-    const createProduct=async()=>{
+    const createProduct=async(productData)=>{
         dispatch({type:'SET_ADMIN_LOADING',payload:true})
         try {
             await axios.post('/api/products/',productData,getConfig());
@@ -179,6 +200,63 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
+    // 🔑 CATEGORY MANAGEMENT ACTIONS
+    const fetchCategories = async () => {
+        dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
+        try {
+            const response = await axios.get('/api/categories', getConfig());
+            dispatch({ type: 'SET_CATEGORIES', payload: response.data });
+        } catch (error) {
+            const message = error.response?.data?.message || 'Failed to fetch categories.';
+            dispatch({ type: 'SET_ADMIN_ERROR', payload: message });
+        } finally {
+            dispatch({ type: 'SET_ADMIN_LOADING', payload: false });
+        }
+    };
+
+    const createCategory = async (categoryData) => {
+        dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
+        try {
+            const response = await axios.post('/api/categories', categoryData, getConfig());
+            dispatch({ type: 'ADD_CATEGORY', payload: response.data.category });
+            fetchCategories(); // Refresh list
+            return true;
+        } catch (error) {
+            const message = error.response?.data?.message || 'Failed to create category.';
+            dispatch({ type: 'SET_ADMIN_ERROR', payload: message });
+            return false;
+        }
+    };
+
+    const updateCategory = async (categoryId, categoryData) => {
+        dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
+        try {
+            const response = await axios.put(`/api/categories/${categoryId}`, categoryData, getConfig());
+            dispatch({ type: 'UPDATE_CATEGORY', payload: response.data.category });
+            fetchCategories(); // Refresh list
+            return true;
+        } catch (error) {
+            const message = error.response?.data?.message || 'Failed to update category.';
+            dispatch({ type: 'SET_ADMIN_ERROR', payload: message });
+            return false;
+        }
+    };
+
+    const deleteCategory = async (categoryId) => {
+        if (window.confirm('Are you sure you want to delete this category?')) {
+            dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
+            try {
+                await axios.delete(`/api/categories/${categoryId}`, getConfig());
+                dispatch({ type: 'DELETE_CATEGORY', payload: categoryId });
+            } catch (error) {
+                const message = error.response?.data?.message || 'Failed to delete category.';
+                dispatch({ type: 'SET_ADMIN_ERROR', payload: message });
+            } finally {
+                dispatch({ type: 'SET_ADMIN_LOADING', payload: false });
+            }
+        }
+    };
+
 
 
 
@@ -212,11 +290,17 @@ export const AdminProvider = ({ children }) => {
                 fetchAllOrders,
                 updateOrderStatus,
                 
-                // ⬅️ NEW PRODUCT ACTIONS
+                // ⬅️ PRODUCT ACTIONS
                 fetchAdminProducts, 
                 createProduct,
                 updateProduct,
                 deleteProduct,
+                
+                // ⬅️ CATEGORY ACTIONS
+                fetchCategories,
+                createCategory,
+                updateCategory,
+                deleteCategory,
             }}
         >
             {children}

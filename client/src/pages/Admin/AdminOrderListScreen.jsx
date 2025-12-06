@@ -43,12 +43,9 @@ function AdminOrderListScreen() {
     }
 
     return (
-        <div className='container mt-5'>
-            <div className='row'>
-                <div className='col-md-3'>
-                    <AdminSidebar />
-                </div>
-                <div className='col-md-9'>
+        <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
+            <AdminSidebar />
+            <div className='p-4 admin-content' style={{ marginLeft: '280px' }}>
                     <h1>Order Management</h1>
                     {adminError && <div className="alert alert-danger">{adminError}</div>}
                     <table className='table table-striped table-hover mt-3'>
@@ -65,14 +62,22 @@ function AdminOrderListScreen() {
                         <tbody>
                             {allOrders.map((order) => (
                                 <tr key={order._id}>
-                                    <td>{order._id.substring(order._id.length - 4)}</td>
+                                    <td>{order._id}</td>
                                     <td>{order.user?.name || 'Deleted User'}</td>
                                     <td>{new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-                                    <td>${order.totalPrice.toFixed(2)}</td>
+                                    <td>₹ {order.totalPrice.toFixed(2)}</td>
                                     <td>
-                                        <span className={`badge bg-${order.status === 'Delivered' ? 'success' : 'warning'}`}>
-                                            {order.status}
-                                        </span>
+                                        <span className={`badge bg-${order.status === 'Pending'
+        ? 'warning'
+        : order.status === 'Shipped'
+        ? 'primary'
+        : order.status === 'Delivered'
+        ? 'success'
+        : 'secondary' // fallback
+    }`}
+>
+    {order.status}
+</span>
                                     </td>
                                     <td>
                                         <select 
@@ -90,7 +95,6 @@ function AdminOrderListScreen() {
                             ))}
                         </tbody>
                     </table>
-                </div>
             </div>
         </div>
     );
