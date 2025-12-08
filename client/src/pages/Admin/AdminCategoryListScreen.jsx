@@ -2,7 +2,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminContext } from '../../context/AdminContext';
-import AdminSidebar from '../../component/Admin/AdminSidebar';
 import axios from 'axios';
 
 function AdminCategoryListScreen() {
@@ -196,10 +195,8 @@ function AdminCategoryListScreen() {
     }
 
     return (
-        <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
-            <AdminSidebar />
-            <div className='p-4 admin-content' style={{ marginLeft: '280px' }}>
-                    <div className='d-flex justify-content-between align-items-center mb-4'>
+        <div className='p-4'>
+            <div className='d-flex justify-content-between align-items-center mb-4'>
                         <h1>Category Management</h1>
                         <button
                             className='btn btn-success'
@@ -397,7 +394,6 @@ function AdminCategoryListScreen() {
                             )}
                         </div>
                     )}
-            </div>
         </div>
     );
 }

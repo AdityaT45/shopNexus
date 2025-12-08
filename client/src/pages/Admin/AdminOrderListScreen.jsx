@@ -1,8 +1,6 @@
 // client/src/pages/AdminOrderListScreen.jsx
 import React, { useEffect, useContext, useState } from 'react';
-// Corrected relative path assumption: trying ../../ based on compiler error
 import { AdminContext } from '../../context/AdminContext'; 
-import AdminSidebar from '../../component/Admin/AdminSidebar'; 
 
 function AdminOrderListScreen() {
     const { 
@@ -43,10 +41,8 @@ function AdminOrderListScreen() {
     }
 
     return (
-        <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
-            <AdminSidebar />
-            <div className='p-4 admin-content' style={{ marginLeft: '280px' }}>
-                    <h1>Order Management</h1>
+        <div className='p-4'>
+            <h1>Order Management</h1>
                     {adminError && <div className="alert alert-danger">{adminError}</div>}
                     <table className='table table-striped table-hover mt-3'>
                         <thead>
@@ -95,7 +91,6 @@ function AdminOrderListScreen() {
                             ))}
                         </tbody>
                     </table>
-            </div>
         </div>
     );
 }

@@ -28,7 +28,7 @@ function UserHeader() {
     return (
         <>
             {/* Main Header with Search Bar */}
-            <header className='bg-primary text-white py-2'>
+            <header className='bg-dark text-white py-2'>
                 <div className='container-fluid'>
                     <div className='row align-items-center'>
                         {/* Logo */}

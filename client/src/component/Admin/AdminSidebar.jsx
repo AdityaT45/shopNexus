@@ -16,14 +16,16 @@ function AdminSidebar() {
     // Set initial state and handle resize
     useEffect(() => {
         const handleResize = () => {
-            // On desktop, always show sidebar
+            // On desktop (lg and above), always show sidebar
             if (window.innerWidth >= 992) {
                 setIsOpen(true);
+            } else {
+                // On tablet and mobile, close sidebar
+                setIsOpen(false);
             }
-            // On mobile, keep current state (don't auto-close on resize)
         };
         
-        // Set initial state: open on desktop, closed on mobile
+        // Set initial state: open on desktop, closed on tablet/mobile
         setIsOpen(window.innerWidth >= 992);
         
         window.addEventListener('resize', handleResize);
@@ -36,26 +38,39 @@ function AdminSidebar() {
 
     return (
         <>
-            {/* Toggle Button for Mobile */}
+            {/* Toggle Button for Mobile and Tablet */}
             <button
                 className="btn btn-dark d-lg-none position-fixed"
-                style={{ top: '10px', left: '10px', zIndex: 1001 }}
+                style={{ 
+                    top: '70px', 
+                    left: isOpen ? '245px' : '10px',
+                    zIndex: 1031,
+                    borderRadius: '50%',
+                    width: '45px',
+                    height: '45px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    transition: 'left 0.3s ease'
+                }}
                 onClick={toggleSidebar}
             >
-                <i className={`fas ${isOpen ? 'fa-times' : 'fa-bars'}`}></i>
+                <i className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} fs-5`}></i>
             </button>
 
-            {/* Overlay for Mobile */}
+            {/* Overlay for Mobile and Tablet */}
             {isOpen && (
                 <div
                     className="d-lg-none position-fixed"
                     style={{
-                        top: 0,
+                        top: '56px',
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        zIndex: 999
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        zIndex: 1019,
+                        transition: 'opacity 0.3s ease'
                     }}
                     onClick={toggleSidebar}
                 />
@@ -63,7 +78,7 @@ function AdminSidebar() {
 
             {/* Sidebar */}
             <div
-                className={`d-flex flex-column flex-shrink-0 p-3 bg-dark text-white ${isOpen ? 'show' : ''}`}
+                className={`d-flex flex-column flex-shrink-0 p-3 bg-dark text-white admin-sidebar ${isOpen ? 'show' : ''}`}
                 style={{
                     position: 'fixed',
                     top: '56px', // Start below navbar
@@ -71,11 +86,22 @@ function AdminSidebar() {
                     minHeight: 'calc(100vh - 56px)',
                     width: '280px',
                     zIndex: 1020,
-                    transition: 'left 0.3s ease'
+                    transition: 'left 0.3s ease',
+                    overflowY: 'auto',
+                    boxShadow: isOpen && window.innerWidth < 992 ? '2px 0 10px rgba(0,0,0,0.3)' : 'none'
                 }}
             >
             {/* Header with Logo */}
-            <NavLink to="/admin/dashboard" className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <NavLink 
+                to="/admin/dashboard" 
+                className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none"
+                onClick={() => {
+                    // Close sidebar on mobile when link is clicked
+                    if (window.innerWidth < 992) {
+                        setIsOpen(false);
+                    }
+                }}
+            >
                 <span className="fs-4 me-2">
                     <i className="fas fa-store"></i>
                 </span>
@@ -86,70 +112,107 @@ function AdminSidebar() {
             {/* Navigation Links */}
             <ul className="nav nav-pills flex-column mb-auto">
                 
-                <li className="nav-item">
+                <li className="nav-item mb-2">
                     <NavLink 
                         to="/admin/dashboard" 
                         className={({ isActive }) => 
-                            `nav-link text-white ${isActive ? 'bg-primary active' : ''}`
+                            `nav-link text-white d-flex align-items-center ${isActive ? 'bg-primary active' : 'hover-bg-secondary'}`
                         }
+                        onClick={() => {
+                            // Close sidebar on mobile/tablet when link is clicked
+                            if (window.innerWidth < 992) {
+                                setIsOpen(false);
+                            }
+                        }}
+                        style={{ borderRadius: '8px', padding: '10px 15px', transition: 'all 0.2s ease' }}
                     >
-                        <i className="fas fa-tachometer-alt me-2"></i>
-                        Dashboard
+                        <i className="fas fa-tachometer-alt me-3" style={{ fontSize: '18px', width: '24px', textAlign: 'center' }}></i>
+                        <span>Dashboard</span>
                     </NavLink>
                 </li>
-                <li className="nav-item">
+                <li className="nav-item mb-2">
                     <NavLink 
                         to="/admin/orders" 
                         className={({ isActive }) => 
-                            `nav-link text-white ${isActive ? 'bg-primary active' : ''}`
+                            `nav-link text-white d-flex align-items-center ${isActive ? 'bg-primary active' : 'hover-bg-secondary'}`
                         }
+                        onClick={() => {
+                            if (window.innerWidth < 992) {
+                                setIsOpen(false);
+                            }
+                        }}
+                        style={{ borderRadius: '8px', padding: '10px 15px', transition: 'all 0.2s ease' }}
                     >
-                        <i className="fas fa-shopping-basket me-2"></i>
-                        Orders
+                        <i className="fas fa-shopping-basket me-3" style={{ fontSize: '18px', width: '24px', textAlign: 'center' }}></i>
+                        <span>Orders</span>
                     </NavLink>
                 </li>
-                <li className="nav-item">
+                <li className="nav-item mb-2">
                     <NavLink 
                         to="/admin/products" 
                         className={({ isActive }) => 
-                            `nav-link text-white ${isActive ? 'bg-primary active' : ''}`
+                            `nav-link text-white d-flex align-items-center ${isActive ? 'bg-primary active' : 'hover-bg-secondary'}`
                         }
+                        onClick={() => {
+                            if (window.innerWidth < 992) {
+                                setIsOpen(false);
+                            }
+                        }}
+                        style={{ borderRadius: '8px', padding: '10px 15px', transition: 'all 0.2s ease' }}
                     >
-                        <i className="fas fa-box-open me-2"></i>
-                        Products
+                        <i className="fas fa-box-open me-3" style={{ fontSize: '18px', width: '24px', textAlign: 'center' }}></i>
+                        <span>Products</span>
                     </NavLink>
                 </li>
-                <li className="nav-item">
+                <li className="nav-item mb-2">
                     <NavLink 
                         to="/admin/categories" 
                         className={({ isActive }) => 
-                            `nav-link text-white ${isActive ? 'bg-primary active' : ''}`
+                            `nav-link text-white d-flex align-items-center ${isActive ? 'bg-primary active' : 'hover-bg-secondary'}`
                         }
+                        onClick={() => {
+                            if (window.innerWidth < 992) {
+                                setIsOpen(false);
+                            }
+                        }}
+                        style={{ borderRadius: '8px', padding: '10px 15px', transition: 'all 0.2s ease' }}
                     >
-                        <i className="fas fa-tags me-2"></i>
-                        Categories
+                        <i className="fas fa-tags me-3" style={{ fontSize: '18px', width: '24px', textAlign: 'center' }}></i>
+                        <span>Categories</span>
                     </NavLink>
                 </li>
-                <li className="nav-item">
+                <li className="nav-item mb-2">
                     <NavLink 
                         to="/admin/users" 
                         className={({ isActive }) => 
-                            `nav-link text-white ${isActive ? 'bg-primary active' : ''}`
+                            `nav-link text-white d-flex align-items-center ${isActive ? 'bg-primary active' : 'hover-bg-secondary'}`
                         }
+                        onClick={() => {
+                            if (window.innerWidth < 992) {
+                                setIsOpen(false);
+                            }
+                        }}
+                        style={{ borderRadius: '8px', padding: '10px 15px', transition: 'all 0.2s ease' }}
                     >
-                        <i className="fas fa-users me-2"></i>
-                        Customers
+                        <i className="fas fa-users me-3" style={{ fontSize: '18px', width: '24px', textAlign: 'center' }}></i>
+                        <span>Customers</span>
                     </NavLink>
                 </li>
-                <li className="nav-item">
+                <li className="nav-item mb-2">
                     <NavLink 
                         to="/admin/banners" 
                         className={({ isActive }) => 
-                            `nav-link text-white ${isActive ? 'bg-primary active' : ''}`
+                            `nav-link text-white d-flex align-items-center ${isActive ? 'bg-primary active' : 'hover-bg-secondary'}`
                         }
+                        onClick={() => {
+                            if (window.innerWidth < 992) {
+                                setIsOpen(false);
+                            }
+                        }}
+                        style={{ borderRadius: '8px', padding: '10px 15px', transition: 'all 0.2s ease' }}
                     >
-                        <i className="fas fa-image me-2"></i>
-                        Banners
+                        <i className="fas fa-image me-3" style={{ fontSize: '18px', width: '24px', textAlign: 'center' }}></i>
+                        <span>Banners</span>
                     </NavLink>
                 </li>
             </ul>

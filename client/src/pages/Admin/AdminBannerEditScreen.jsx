@@ -2,7 +2,6 @@ import React, { useEffect, useState, useContext } from "react";
 import { BannerContext } from "../../context/BannerContext";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import AdminSidebar from "../../component/Admin/AdminSidebar";
 
 const AdminBannerEditScreen = () => {
   const { id } = useParams();
@@ -64,10 +63,8 @@ useEffect(() => {
 };
 
   return (
-    <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
-      <AdminSidebar />
-      <div className='p-4 admin-content' style={{ marginLeft: '280px' }}>
-          <h1 className="mb-4">{id ? "Edit Banner" : "Create Banner"}</h1>
+    <div className='p-4'>
+      <h1 className="mb-4">{id ? "Edit Banner" : "Create Banner"}</h1>
 
           <form onSubmit={submitHandler} className="p-4 border rounded bg-light">
 
@@ -103,16 +100,16 @@ useEffect(() => {
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Status</label>
-              <select
-                className="form-control"
+  <label className="form-label">Status</label>
+  <select
+    className="form-control"
                 value={status || "Active"}
                 onChange={(e) => setStatus(e.target.value)}
-              >
+  >
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
-              </select>
-            </div>
+  </select>
+</div>
 
             {/* Submit Button */}
             <button type="submit" className="btn btn-primary w-100">
@@ -120,7 +117,6 @@ useEffect(() => {
             </button>
 
           </form>
-      </div>
     </div>
   );
 };

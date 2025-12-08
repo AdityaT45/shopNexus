@@ -23,6 +23,7 @@ import AdminOrderListScreen from "./pages/Admin/AdminOrderListScreen";
 import AdminProductListScreen from "./pages/Admin/AdminProductListScreen";
 import AdminProductEditScreen from "./pages/Admin/AdminProductEditScreen";
 import AdminRoute from "./component/Admin/AdminRoute";
+import AdminLayout from "./component/Admin/AdminLayout";
 import { AppContext } from "./context/AppContext";
 import AdminBannerListScreen from "./pages/Admin/AdminBannerListScreen";
 import AdminBannerEditScreen from "./pages/Admin/AdminBannerEditScreen";
@@ -76,16 +77,18 @@ function App() {
 
             {/* Admin Routes - Protected from Users */}
             <Route element={<AdminRoute />}>
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/users" element={<AdminUserListScreen />} />
-              <Route path="/admin/orders" element={<AdminOrderListScreen />} />
-              <Route path="/admin/products" element={<AdminProductListScreen />}/>
-              <Route path="/admin/categories" element={<AdminCategoryListScreen />}/>
-              <Route path="/admin/banners" element={<AdminBannerListScreen />}/>
-              <Route path="/admin/banner/create" element={<AdminBannerEditScreen />}/>
-              <Route path="/admin/banner/:id" element={<AdminBannerEditScreen />} />
-              <Route path="/admin/product/new" element={<AdminProductEditScreen />}/>
-              <Route path="/admin/product/:productId/edit" element={<AdminProductEditScreen />} />
+              <Route element={<AdminLayout />}>
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/users" element={<AdminUserListScreen />} />
+                <Route path="/admin/orders" element={<AdminOrderListScreen />} />
+                <Route path="/admin/products" element={<AdminProductListScreen />}/>
+                <Route path="/admin/categories" element={<AdminCategoryListScreen />}/>
+                <Route path="/admin/banners" element={<AdminBannerListScreen />}/>
+                <Route path="/admin/banner/create" element={<AdminBannerEditScreen />}/>
+                <Route path="/admin/banner/:id" element={<AdminBannerEditScreen />} />
+                <Route path="/admin/product/new" element={<AdminProductEditScreen />}/>
+                <Route path="/admin/product/:productId/edit" element={<AdminProductEditScreen />} />
+              </Route>
             </Route>
           </Routes>
         </div>

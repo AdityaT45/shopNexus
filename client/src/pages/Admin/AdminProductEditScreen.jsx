@@ -3,7 +3,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AdminContext } from '../../context/AdminContext';
 import { AppContext } from '../../context/AppContext'; // Need AppContext for getProductById
-import AdminSidebar from '../../component/Admin/AdminSidebar';
 import axios from 'axios';
 
 function AdminProductEditScreen() {
@@ -256,11 +255,9 @@ function AdminProductEditScreen() {
     }
     
     return (
-        <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
-            <AdminSidebar />
-            <div className='p-4 admin-content' style={{ marginLeft: '280px' }}>
-                <div className='row justify-content-center'>
-                    <div className='col-md-10'>
+        <div className='p-4'>
+            <div className='row justify-content-center'>
+                <div className='col-md-10'>
                     <h1 className='mb-4'>{title}</h1>
                     {(adminError || fetchError) && <div className="alert alert-danger">{adminError || fetchError}</div>}
                     
@@ -459,7 +456,6 @@ function AdminProductEditScreen() {
                             </button>
                         </div>
                     </form>
-                    </div>
                 </div>
             </div>
         </div>

@@ -2,7 +2,6 @@
 import React, { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminContext } from '../../context/AdminContext';
-import AdminSidebar from '../../component/Admin/AdminSidebar';
 
 function AdminDashboard() {
     const navigate = useNavigate();
@@ -43,10 +42,8 @@ function AdminDashboard() {
     }
 
     return (
-        <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
-            <AdminSidebar />
-            <div className='p-4 admin-content' style={{ marginLeft: '280px', paddingTop: '20px' }}>
-                    <h1 className='mb-4'>Admin Dashboard</h1>
+        <div className='p-4' style={{ paddingTop: '20px' }}>
+            <h1 className='mb-4'>Admin Dashboard</h1>
                     {adminError && <div className="alert alert-danger">{adminError}</div>}
                     
                     {/* Statistics Cards */}
@@ -150,7 +147,6 @@ function AdminDashboard() {
                             )}
                         </div>
                     </div>
-            </div>
         </div>
     );
 }

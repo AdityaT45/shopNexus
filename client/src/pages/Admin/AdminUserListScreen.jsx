@@ -1,7 +1,6 @@
 // client/src/pages/AdminUserListScreen.jsx
 import React, { useEffect, useContext } from 'react';
 import { AdminContext } from '../../context/AdminContext';
-import AdminSidebar from '../../component/Admin/AdminSidebar';
 
 function AdminUserListScreen() {
     const { 
@@ -47,10 +46,8 @@ const handleRoleChange = (userId, currentRole) => {
     }
 
     return (
-        <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
-            <AdminSidebar />
-            <div className='p-4 admin-content' style={{ marginLeft: '280px' }}>
-                    <h1>User Management</h1>
+        <div className='p-4'>
+            <h1>User Management</h1>
                     {adminError && <div className="alert alert-danger">{adminError}</div>}
                     <table className='table table-striped table-hover mt-3'>
                         <thead>
@@ -111,7 +108,6 @@ const handleRoleChange = (userId, currentRole) => {
                             ))}
                         </tbody>
                     </table>
-            </div>
         </div>
     );
 }

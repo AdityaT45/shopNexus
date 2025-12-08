@@ -1,8 +1,7 @@
 // client/src/pages/AdminProductListScreen.jsx
 import React, { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AdminContext } from '../../context/AdminContext'; 
-import AdminSidebar from '../../component/Admin/AdminSidebar';
+import { AdminContext } from '../../context/AdminContext';
  
 
 function AdminProductListScreen() {
@@ -39,10 +38,8 @@ function AdminProductListScreen() {
     }
 
     return (
-        <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
-            <AdminSidebar />
-            <div className='p-4 admin-content' style={{ marginLeft: '280px' }}>
-                    <div className='d-flex justify-content-between align-items-center mb-4'>
+        <div className='p-4'>
+            <div className='d-flex justify-content-between align-items-center mb-4'>
                         <h1>Product Management</h1>
                         <button className='btn btn-success' onClick={handleCreate}>
                             <i className="fas fa-plus me-1"></i> Create Product
@@ -100,7 +97,6 @@ function AdminProductListScreen() {
                             ))}
                         </tbody>
                     </table>
-            </div>
         </div>
     );
 }

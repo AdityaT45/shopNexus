@@ -185,48 +185,91 @@ function UserDashboard() {
                 )}
             </div>
 
-            {/* SHOP BY CATEGORY Section */}
+            {/* SHOP BY CATEGORY Section - Flipkart Style */}
             {categories && categories.length > 0 && (
-                <div className='mb-4'>
-                    <div className='d-flex justify-content-between align-items-center mb-3'>
-                        <h2>Shop by Category</h2>
+                <div className='mb-4' style={{ 
+                    backgroundColor: '#f0f0f0', 
+                    padding: '30px 20px',
+                    borderRadius: '8px',
+                    marginTop: '40px'
+                }}>
+                    <div className='d-flex justify-content-between align-items-center mb-4'>
+                        <h2 style={{ 
+                            fontSize: '24px', 
+                            fontWeight: '600',
+                            color: '#212529',
+                            margin: 0
+                        }}>
+                            Shop by Category
+                        </h2>
                         <button 
-                            className='btn btn-outline-primary'
+                            className='btn btn-outline-primary btn-sm'
                             onClick={() => navigate('/categories')}
+                            style={{ 
+                                fontSize: '14px',
+                                padding: '6px 16px'
+                            }}
                         >
-                            View All Categories <i className='fas fa-arrow-right ms-1'></i>
+                            View All <i className='fas fa-arrow-right ms-1'></i>
                         </button>
                     </div>
-                    <div className='row'>
-                        {categories.slice(0, 8).map((category) => (
-                            <div key={category._id} className='col-md-3 col-6 mb-3'>
+                    <div className='row g-3'>
+                        {categories.filter(cat => cat.isActive).slice(0, 8).map((category) => (
+                            <div key={category._id} className='col-lg-2 col-md-3 col-4 col-sm-4'>
                                 <div 
-                                    className='card h-100 shadow-sm'
-                                    style={{ cursor: 'pointer' }}
+                                    className='card h-100 border-0'
+                                    style={{ 
+                                        cursor: 'pointer',
+                                        backgroundColor: '#ffffff',
+                                        borderRadius: '8px',
+                                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                        overflow: 'hidden'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-5px)';
+                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }}
                                     onClick={() => {
-                                        setSelectedCategory(category.name);
-                                        setSearchParams({
-                                            ...searchParams,
-                                            category: category.name
+                                        navigate({
+                                            pathname: "/dashboard",
+                                            search: new URLSearchParams({ category: category.name }).toString()
                                         });
                                     }}
                                 >
-                                    <img
-                                        src={category.image}
-                                        alt={category.name}
-                                        className='card-img-top'
-                                        style={{ height: '150px', objectFit: 'cover' }}
-                                        onError={(e) => {
-                                            e.target.src = 'https://via.placeholder.com/300x150?text=Category';
-                                        }}
-                                    />
-                                    <div className='card-body text-center'>
-                                        <h6 className='card-title mb-0'>{category.name}</h6>
-                                        {category.subcategories && category.subcategories.length > 0 && (
-                                            <small className='text-muted'>
-                                                {category.subcategories.length} subcategories
-                                            </small>
-                                        )}
+                                    <div style={{ 
+                                        padding: '15px',
+                                        textAlign: 'center',
+                                        backgroundColor: '#ffffff'
+                                    }}>
+                                        <img
+                                            src={category.image}
+                                            alt={category.name}
+                                            style={{ 
+                                                width: '100%',
+                                                height: '100px',
+                                                objectFit: 'contain',
+                                                marginBottom: '10px'
+                                            }}
+                                            onError={(e) => {
+                                                e.target.src = 'https://via.placeholder.com/150x100?text=Category';
+                                            }}
+                                        />
+                                        <h6 className='mb-0' style={{ 
+                                            fontSize: '13px',
+                                            fontWeight: '500',
+                                            color: '#212529',
+                                            lineHeight: '1.3',
+                                            minHeight: '32px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            {category.name}
+                                        </h6>
                                     </div>
                                 </div>
                             </div>
