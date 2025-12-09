@@ -10,8 +10,14 @@ const UserRoute = () => {
         return <Navigate to="/login" replace />;
     }
 
-    // Prevent admin from accessing user routes
+    // Prevent admin and super admin from accessing user routes
     const isAdmin = user?.isAdmin || user?.role === 'Admin';
+    const isSuperAdmin = user?.role === 'Super Admin';
+    
+    if (isSuperAdmin) {
+        return <Navigate to="/superadmin/dashboard" replace />;
+    }
+    
     if (isAdmin) {
         return <Navigate to="/admin/dashboard" replace />;
     }

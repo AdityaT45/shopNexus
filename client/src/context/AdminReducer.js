@@ -16,6 +16,17 @@ export const AdminReducer = (state, action) => {
                 adminError: action.payload,
                 adminLoading: false,
             };
+
+        case 'SET_ATTRIBUTES_FOR_CATEGORY':
+            return {
+                ...state,
+                attributesByCategory: {
+                    ...state.attributesByCategory,
+                    [action.payload.category]: action.payload.fields || [],
+                },
+                adminLoading: false,
+                adminError: null,
+            };
             
         // NEW: Action to explicitly set the admin status based on AppContext changes
         case 'SET_ADMIN_STATUS':

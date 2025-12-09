@@ -3,6 +3,8 @@ import React, { useEffect, useContext, useState } from 'react';
 import { AdminContext } from '../../context/AdminContext'; 
 
 function AdminOrderListScreen() {
+    const [page, setPage] = useState(1);
+    const pageSize = 10;
     const { 
         allOrders, 
         fetchAllOrders, 
@@ -32,6 +34,9 @@ function AdminOrderListScreen() {
         setUpdatingOrderId(null);
     };
 
+    const totalPages = Math.max(1, Math.ceil(allOrders.length / pageSize));
+    const pagedOrders = allOrders.slice((page - 1) * pageSize, page * pageSize);
+
     if (adminLoading && allOrders.length === 0) {
         return <h2 className='text-center mt-5'>Loading Orders...</h2>;
     }
@@ -47,7 +52,7 @@ function AdminOrderListScreen() {
                     <table className='table table-striped table-hover mt-3'>
                         <thead>
                             <tr>
-                                <th>ID (last 4)</th>
+                                <th>Order ID</th>
                                 <th>User</th>
                                 <th>Date</th>
                                 <th>Total</th>
@@ -56,9 +61,9 @@ function AdminOrderListScreen() {
                             </tr>
                         </thead>
                         <tbody>
-                            {allOrders.map((order) => (
+                            {pagedOrders.map((order) => (
                                 <tr key={order._id}>
-                                    <td>{order._id}</td>
+                                    <td><code>{order.orderId || order._id}</code></td>
                                     <td>{order.user?.name || 'Deleted User'}</td>
                                     <td>{new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                                     <td>₹ {order.totalPrice.toFixed(2)}</td>
@@ -91,6 +96,14 @@ function AdminOrderListScreen() {
                             ))}
                         </tbody>
                     </table>
+                    {/* Pagination */}
+                    <div className='d-flex justify-content-between align-items-center'>
+                        <small className='text-muted'>Page {page} of {totalPages}</small>
+                        <div>
+                            <button className='btn btn-sm btn-outline-secondary me-2' disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
+                            <button className='btn btn-sm btn-outline-secondary' disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</button>
+                        </div>
+                    </div>
         </div>
     );
 }

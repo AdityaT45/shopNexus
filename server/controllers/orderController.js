@@ -86,7 +86,10 @@ const getMyOrders = async(req,res)=>{
 const getAllOrders = async (req, res) => {
     try {
         // Find ALL orders, sorted by newest first
-        const orders = await Order.find({}).sort({ createdAt: -1 }).populate('user', 'name email'); // Populate user data
+        const orders = await Order.find({})
+            .select('_id orderId user orderItems shippingAddress totalPrice status createdAt')
+            .sort({ createdAt: -1 })
+            .populate('user', 'name email userId'); // Populate user data
         res.status(200).json(orders);
     } catch (error) {
         console.error(error);

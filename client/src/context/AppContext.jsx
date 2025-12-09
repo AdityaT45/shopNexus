@@ -136,6 +136,20 @@ export const AppProvider = ({ children }) => {
         }
     };
 
+    // 🔑 Fetch Top Selling Products (Public)
+    const fetchTopProducts = useCallback(async () => {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        try {
+            const response = await axios.get('/api/products/top-selling');
+            dispatch({ type: 'SET_TOP_PRODUCTS', payload: response.data });
+        } catch (error) {
+            const message = error.response?.data?.message || 'Failed to fetch top products.';
+            dispatch({ type: 'SET_ERROR', payload: message });
+        } finally {
+            dispatch({ type: 'SET_LOADING', payload: false });
+        }
+    }, []);
+
     // --- Action Function 5: Fetch Cart ---
     const fetchCart = useCallback(async () => {
         if (!state.isAuthenticated) return;
@@ -225,6 +239,49 @@ export const AppProvider = ({ children }) => {
         }
     };
 
+    // Wishlist Actions
+    const fetchWishlist = useCallback(async () => {
+        if (!state.isAuthenticated) return;
+        dispatch({ type: 'SET_LOADING', payload: true });
+        try {
+            const response = await axios.get('/api/wishlist', getConfig());
+            dispatch({ type: 'SET_WISHLIST', payload: response.data });
+        } catch (error) {
+            const message = error.response?.data?.message || 'Failed to fetch wishlist.';
+            dispatch({ type: 'SET_ERROR', payload: message });
+        } finally {
+            dispatch({ type: 'SET_LOADING', payload: false });
+        }
+    }, [state.isAuthenticated]);
+
+    const addToWishlist = async (productId) => {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        try {
+            const response = await axios.post('/api/wishlist', { productId }, getConfig());
+            dispatch({ type: 'SET_WISHLIST', payload: response.data });
+        } catch (error) {
+            const message = error.response?.data?.message || 'Failed to add item to wishlist.';
+            dispatch({ type: 'SET_ERROR', payload: message });
+            throw error;
+        } finally {
+            dispatch({ type: 'SET_LOADING', payload: false });
+        }
+    };
+
+    const removeFromWishlist = async (productId) => {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        try {
+            const response = await axios.delete(`/api/wishlist/${productId}`, getConfig());
+            dispatch({ type: 'SET_WISHLIST', payload: response.data });
+        } catch (error) {
+            const message = error.response?.data?.message || 'Failed to remove item from wishlist.';
+            dispatch({ type: 'SET_ERROR', payload: message });
+            throw error;
+        } finally {
+            dispatch({ type: 'SET_LOADING', payload: false });
+        }
+    };
+
 
     return (
         <AppContext.Provider
@@ -240,6 +297,7 @@ export const AppProvider = ({ children }) => {
                 getProductById,
                 fetchProducts,
                 fetchProductDetails,
+                fetchTopProducts,
                 updateCart,
                 fetchCart,
                 removeItemFromCart,
@@ -247,6 +305,9 @@ export const AppProvider = ({ children }) => {
                 fetchMyOrders,
                 fetchActiveBanners,
                 fetchCategories,
+                fetchWishlist,
+                addToWishlist,
+                removeFromWishlist,
 
             }}
         >

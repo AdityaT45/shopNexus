@@ -1,5 +1,5 @@
 // client/src/context/AdminContext.js
-import React, { createContext, useReducer, useContext } from 'react';
+import React, { createContext, useReducer, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { adminInitialState } from './AdminInitialState';
 import { AdminReducer } from './AdminReducer';
@@ -176,7 +176,38 @@ const deleteUser = async (userId) => {
         }
     }
 
+    // ATTRIBUTES MANAGEMENT
+    const fetchAttributesForCategory = useCallback(async (category) => {
+        if (!category) return { category: '', fields: [] };
+        dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
+        try {
+            const response = await axios.get(`/api/attributes/${encodeURIComponent(category)}`, getConfig());
+            const payload = response.data || { category, fields: [] };
+            dispatch({ type: 'SET_ATTRIBUTES_FOR_CATEGORY', payload });
+            return payload;
+        } catch (error) {
+            const message = error.response?.data?.message || 'Failed to fetch attributes.';
+            dispatch({ type: 'SET_ADMIN_ERROR', payload: message });
+            return { category, fields: [] };
+        } finally {
+            dispatch({ type: 'SET_ADMIN_LOADING', payload: false });
+        }
+    }, [dispatch]);
 
+    const saveAttributesForCategory = useCallback(async (category, fields) => {
+        dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
+        try {
+            const response = await axios.post('/api/attributes', { category, fields }, getConfig());
+            dispatch({ type: 'SET_ATTRIBUTES_FOR_CATEGORY', payload: response.data });
+            return true;
+        } catch (error) {
+            const message = error.response?.data?.message || 'Failed to save attributes.';
+            dispatch({ type: 'SET_ADMIN_ERROR', payload: message });
+            return false;
+        } finally {
+            dispatch({ type: 'SET_ADMIN_LOADING', payload: false });
+        }
+    }, [dispatch]);
 
      // 🔑 A9. Delete Product (Soft Delete is common, but we'll use a standard DELETE)
     const deleteProduct = async (productId) => {
@@ -301,6 +332,10 @@ const deleteUser = async (userId) => {
                 createCategory,
                 updateCategory,
                 deleteCategory,
+
+                // ⬅️ ATTRIBUTES ACTIONS
+                fetchAttributesForCategory,
+                saveAttributesForCategory,
             }}
         >
             {children}

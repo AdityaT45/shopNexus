@@ -10,6 +10,12 @@ const AdminRoute = () => {
         return <Navigate to="/login" replace />;
     }
 
+    // Redirect Super Admin to their own dashboard
+    const isSuperAdmin = user?.role === 'Super Admin';
+    if (isSuperAdmin) {
+        return <Navigate to="/superadmin/dashboard" replace />;
+    }
+
     const isAdmin = user?.isAdmin || user?.role === 'Admin';
     if (!isAdmin) {
         return <Navigate to="/" replace />;

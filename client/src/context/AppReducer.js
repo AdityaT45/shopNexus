@@ -21,6 +21,7 @@ export const initialState = {
   // Product State
   products: [],
   productDetails: null,
+  topProducts: [],
 
   // Global UI State (for loading/errors)
   isLoading: false,
@@ -36,6 +37,9 @@ export const initialState = {
   // Category State
   categories: [],
   activeBanners: [],
+
+  // Wishlist State
+  wishlist: null,
 };
 
 // The central Reducer function
@@ -79,6 +83,7 @@ export const AppReducer = (state, action) => {
         cart: null,
         myOrders: [],
         lastOrder: null,
+        wishlist: null,
       };
 
     // --- Product Actions ---
@@ -86,6 +91,8 @@ export const AppReducer = (state, action) => {
       return { ...state, products: action.payload, error: null };
     case "SET_PRODUCT_DETAILS":
       return { ...state, productDetails: action.payload, error: null };
+    case "SET_TOP_PRODUCTS":
+      return { ...state, topProducts: action.payload, error: null };
 
     // --- UI/Global Actions ---
     case "SET_LOADING":
@@ -136,6 +143,19 @@ export const AppReducer = (state, action) => {
         ...state,
         categories: action.payload,
         error: null,
+      };
+
+    // Wishlist Actions
+    case "SET_WISHLIST":
+      return {
+        ...state,
+        wishlist: action.payload,
+        error: null,
+      };
+    case "CLEAR_WISHLIST":
+      return {
+        ...state,
+        wishlist: null,
       };
 
     default:

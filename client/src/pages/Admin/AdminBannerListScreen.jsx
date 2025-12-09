@@ -1,6 +1,7 @@
 import React, { useEffect, useContext } from "react";
 import { BannerContext } from "../../context/BannerContext";
 import { Link } from "react-router-dom";
+import AdminSidebar from "../../component/Admin/AdminSidebar";
 
 const AdminBannerListScreen = () => {
   const { banners, loading, error, fetchBanners, deleteBanner, updateBanner } =
@@ -35,7 +36,9 @@ const AdminBannerListScreen = () => {
   };
 
   return (
-    <div className='p-4'>
+    <div style={{ minHeight: '100vh', paddingTop: '56px' }}>
+          <AdminSidebar />
+      <div className='p-4 admin-content' style={{ marginLeft: '280px' }}>
 
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h1>Banner Management</h1>
@@ -113,6 +116,7 @@ const AdminBannerListScreen = () => {
               
             </tbody>
           </table>
+      </div>
     </div>
   );
 };

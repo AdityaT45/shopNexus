@@ -71,7 +71,7 @@ const deleteUserAccount = asyncHandler(async (req, res) => {
 
 const getAllUsers = asyncHandler(async (req, res) => {
     // Find all users and select the necessary, non-sensitive fields for the admin panel
-    const users = await User.find({}).select('_id name email isAdmin role createdAt');
+    const users = await User.find({}).select('_id userId name email isAdmin role createdAt photo');
 
     res.json(users);
 });

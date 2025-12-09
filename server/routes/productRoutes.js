@@ -1,7 +1,7 @@
 const express=require('express')
 const router=express.Router()
 const { protect, admin } = require('../middleware/authMiddleware');
-const {createProduct,getAllProducts,updateProduct,deleteProduct,getPublicProducts,getPublicProductDetails, getProductById }=require('../controllers/productController')
+const {createProduct,getAllProducts,updateProduct,deleteProduct,getPublicProducts,getPublicProductDetails, getProductById, getTopSellingProducts }=require('../controllers/productController')
 
 
 router.route('/')
@@ -14,6 +14,9 @@ router.route('/public')
 
 router.route('/public/:id')
     .get(getPublicProductDetails)
+
+router.route('/top-selling')
+    .get(getTopSellingProducts)
 
 
 router.route('/:id')

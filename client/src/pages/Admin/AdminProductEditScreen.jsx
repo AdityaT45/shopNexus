@@ -10,7 +10,7 @@ function AdminProductEditScreen() {
     const navigate = useNavigate();
     
     // AdminContext for creation and updating
-    const { createProduct, updateProduct, adminLoading, adminError, isUserAdmin, fetchCategories, categories: adminCategories } = useContext(AdminContext);
+    const { createProduct, updateProduct, adminLoading, adminError, isUserAdmin, fetchCategories, categories: adminCategories, fetchAttributesForCategory, attributesByCategory } = useContext(AdminContext);
     
     // AppContext for fetching product details to pre-populate the form
     const { getProductById } = useContext(AppContext);
@@ -24,14 +24,28 @@ function AdminProductEditScreen() {
         category: '',
         subcategory: '',
         countInStock: 0,
+        attributes: {},
+        originalPrice: 0,
+        discountPercentage: 0,
     });
     const [selectedFiles, setSelectedFiles] = useState([]); // Files selected from PC
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSubcategory, setSelectedSubcategory] = useState('');
+    const [attributeFields, setAttributeFields] = useState([]);
+    const [attributeValues, setAttributeValues] = useState({});
     
     const [fetchError, setFetchError] = useState(null);
+
+    // Custom style for smaller form floating labels to match form-control-sm
+    const formFloatingSmStyle = {
+        // These custom CSS variables help floating labels look right with smaller inputs
+        '--bs-form-check-label-font-size': '0.875rem', 
+        '--bs-form-floating-line-height': '1.25',
+        '--bs-form-floating-padding-y': '0.75rem',
+        '--bs-form-floating-padding-x': '0.75rem',
+    };
 
     // Fetch categories on mount
     useEffect(() => {
@@ -70,6 +84,9 @@ function AdminProductEditScreen() {
                             category: product.category || '',
                             subcategory: product.subcategory || '',
                             countInStock: product.countInStock,
+                            attributes: product.attributes || {},
+                            originalPrice: product.originalPrice || product.price,
+                            discountPercentage: product.discountPercentage || 0,
                         });
                         
                         // Set selected category and subcategory
@@ -79,6 +96,7 @@ function AdminProductEditScreen() {
                         if (product.subcategory) {
                             setSelectedSubcategory(product.subcategory);
                         }
+                        setAttributeValues(product.attributes || {});
                     } else {
                         setFetchError('Product not found or failed to load.');
                     }
@@ -91,6 +109,29 @@ function AdminProductEditScreen() {
         }
     }, [isEditMode, productId, getProductById, isUserAdmin, navigate]);
 
+    // Load attributes when category changes
+    useEffect(() => {
+        const loadAttributes = async () => {
+            if (!selectedCategory) {
+                setAttributeFields([]);
+                setAttributeValues({});
+                return;
+            }
+            const result = await fetchAttributesForCategory(selectedCategory);
+            const fields = result.fields || [];
+            setAttributeFields(fields);
+            setAttributeValues((prev) => {
+                const next = {};
+                fields.forEach((f) => {
+                    next[f] = prev[f] || '';
+                });
+                return next;
+            });
+        };
+        loadAttributes();
+    // fetchAttributesForCategory is memoized in context to avoid re-run loops
+    }, [selectedCategory, fetchAttributesForCategory]);
+
     const getConfig = () => {
         const user = JSON.parse(localStorage.getItem('user'));
         const token = user ? user.token : null;
@@ -102,7 +143,24 @@ function AdminProductEditScreen() {
     };
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        const numValue = name === 'price' || name === 'originalPrice' || name === 'discountPercentage' || name === 'countInStock'
+            ? parseFloat(value) || 0
+            : value;
+        
+        setFormData({ ...formData, [name]: numValue });
+        
+        // Auto-update price when originalPrice changes (if no discount)
+        if (name === 'originalPrice' && numValue > 0 && (!formData.discountPercentage || formData.discountPercentage === 0)) {
+            setFormData(prev => ({ ...prev, price: numValue }));
+        }
+    };
+
+    const handleAttributeChange = (field, value) => {
+        setAttributeValues((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
     };
 
     // Handle file selection from PC
@@ -173,9 +231,19 @@ function AdminProductEditScreen() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
+        // Calculate final price for validation
+        let finalPrice = formData.price;
+        if (formData.originalPrice && formData.originalPrice > 0) {
+            if (formData.discountPercentage > 0) {
+                finalPrice = formData.originalPrice * (1 - formData.discountPercentage / 100);
+            } else {
+                finalPrice = formData.originalPrice;
+            }
+        }
+        
         // Validation check (basic)
-        if (!formData.name || formData.price <= 0 || !selectedCategory) {
-            alert('Please fill out all required fields correctly (Name, Price, and Category are required).');
+        if (!formData.name || finalPrice <= 0 || !selectedCategory) {
+            alert('Please fill out all required fields correctly (Name, Price/Original Price, and Category are required).');
             return;
         }
 
@@ -203,12 +271,24 @@ function AdminProductEditScreen() {
 
             setUploadProgress('Saving product...');
 
+            // Calculate final price - use originalPrice if provided, otherwise use price field
+            let finalPrice = formData.price || 0;
+            if (formData.originalPrice && formData.originalPrice > 0) {
+                if (formData.discountPercentage > 0) {
+                    finalPrice = formData.originalPrice * (1 - formData.discountPercentage / 100);
+                } else {
+                    finalPrice = formData.originalPrice;
+                }
+            }
+
             // Prepare product data with uploaded image URLs
             const productData = {
                 ...formData,
+                price: finalPrice,
                 images: finalImageUrls,
                 category: selectedCategory || formData.category,
-                subcategory: selectedSubcategory || formData.subcategory || ''
+                subcategory: selectedSubcategory || formData.subcategory || '',
+                attributes: attributeValues,
             };
 
             let success = false;
@@ -263,68 +343,192 @@ function AdminProductEditScreen() {
                     
                     <form onSubmit={handleSubmit}>
                         {/* Basic Info */}
-                        <div className='mb-3'>
-                            <label className='form-label'>Name</label>
-                            <input type='text' className='form-control' name='name' value={formData.name} onChange={handleChange} required />
+                        
+                        {/* Name (Floating Label) */}
+                        <div className='form-floating mb-3' style={formFloatingSmStyle}>
+                            <input 
+                                type='text' 
+                                className='form-control form-control-sm' 
+                                id='name' 
+                                name='name' 
+                                value={formData.name} 
+                                onChange={handleChange} 
+                                placeholder='Product Name'
+                                required 
+                            />
+                            <label htmlFor='name'>Product Name</label>
                         </div>
+
                         <div className='row'>
-                            <div className='col-md-6 mb-3'>
-                                <label className='form-label'>Price (₹)</label>
-                                <input type='number' className='form-control' name='price' value={formData.price} onChange={handleChange} required min="0.01" step="0.01" />
+                            {/* Original Price (Floating Label) */}
+                            <div className='col-md-4 mb-3'>
+                                <div className='form-floating' style={formFloatingSmStyle}>
+                                    <input 
+                                        type='number' 
+                                        className='form-control form-control-sm' 
+                                        id='originalPrice' 
+                                        name='originalPrice' 
+                                        value={formData.originalPrice} 
+                                        onChange={handleChange} 
+                                        placeholder='Original Price (₹)'
+                                        min="0.01" 
+                                        step="0.01" 
+                                    />
+                                    <label htmlFor='originalPrice'>Original Price (₹)</label>
+                                </div>
                             </div>
+                            
+                            {/* Discount Percentage (Floating Label) */}
+                            <div className='col-md-4 mb-3'>
+                                <div className='form-floating' style={formFloatingSmStyle}>
+                                    <input 
+                                        type='number' 
+                                        className='form-control form-control-sm' 
+                                        id='discountPercentage' 
+                                        name='discountPercentage' 
+                                        value={formData.discountPercentage} 
+                                        onChange={handleChange} 
+                                        placeholder='Discount (%)'
+                                        min="0" 
+                                        max="100"
+                                        step="0.01" 
+                                    />
+                                    <label htmlFor='discountPercentage'>Discount (%)</label>
+                                </div>
+                            </div>
+                            
+                            {/* Final Price (Calculated, Read-only) */}
+                            <div className='col-md-4 mb-3'>
+                                <div className='form-floating' style={formFloatingSmStyle}>
+                                    <input 
+                                        type='number' 
+                                        className='form-control form-control-sm' 
+                                        id='price' 
+                                        name='price' 
+                                        value={
+                                            formData.originalPrice && formData.originalPrice > 0
+                                                ? (formData.discountPercentage > 0 
+                                                    ? (formData.originalPrice * (1 - formData.discountPercentage / 100)).toFixed(2)
+                                                    : formData.originalPrice.toFixed(2))
+                                                : (formData.price || '')
+                                        } 
+                                        onChange={(e) => {
+                                            // If no original price set, allow manual price entry
+                                            if (!formData.originalPrice || formData.originalPrice === 0) {
+                                                handleChange(e);
+                                            }
+                                        }}
+                                        placeholder='Final Price (₹)'
+                                        required 
+                                        min="0.01" 
+                                        step="0.01"
+                                        readOnly={formData.originalPrice && formData.originalPrice > 0}
+                                        style={formData.originalPrice && formData.originalPrice > 0 ? { backgroundColor: '#e9ecef' } : {}}
+                                    />
+                                    <label htmlFor='price'>Final Price (₹) {formData.originalPrice && formData.originalPrice > 0 ? '(Auto-calculated)' : '*Required'}</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className='row'>
+                            {/* Count In Stock (Floating Label) */}
                             <div className='col-md-6 mb-3'>
-                                <label className='form-label'>Count In Stock</label>
-                                <input type='number' className='form-control' name='countInStock' value={formData.countInStock} onChange={handleChange} required min="0" />
+                                <div className='form-floating' style={formFloatingSmStyle}>
+                                    <input 
+                                        type='number' 
+                                        className='form-control form-control-sm' 
+                                        id='countInStock' 
+                                        name='countInStock' 
+                                        value={formData.countInStock} 
+                                        onChange={handleChange} 
+                                        placeholder='Count In Stock'
+                                        required 
+                                        min="0" 
+                                    />
+                                    <label htmlFor='countInStock'>Count In Stock</label>
+                                </div>
                             </div>
                         </div>
                         
                         {/* Categorization */}
                         <div className='row'>
+                            {/* Category (Floating Label Select) */}
                             <div className='col-md-6 mb-3'>
-                                <label className='form-label'>Category *</label>
-                                <select
-                                    className='form-control'
-                                    value={selectedCategory}
-                                    onChange={(e) => {
-                                        setSelectedCategory(e.target.value);
-                                        setFormData({ ...formData, category: e.target.value });
-                                        setSelectedSubcategory(''); // Reset subcategory when category changes
-                                        setFormData(prev => ({ ...prev, subcategory: '' }));
-                                    }}
-                                    required
-                                >
-                                    <option value=''>Select Category</option>
-                                    {adminCategories.filter(cat => cat.isActive).map((category) => (
-                                        <option key={category._id} value={category.name}>
-                                            {category.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className='col-md-6 mb-3'>
-                                <label className='form-label'>Subcategory</label>
-                                <select
-                                    className='form-control'
-                                    value={selectedSubcategory}
-                                    onChange={(e) => {
-                                        setSelectedSubcategory(e.target.value);
-                                        setFormData({ ...formData, subcategory: e.target.value });
-                                    }}
-                                    disabled={!selectedCategory}
-                                >
-                                    <option value=''>Select Subcategory (Optional)</option>
-                                    {selectedCategory && adminCategories
-                                        .find(cat => cat.name === selectedCategory)
-                                        ?.subcategories?.map((sub, index) => (
-                                            <option key={index} value={sub.name}>
-                                                {sub.name}
+                                <div className='form-floating' style={formFloatingSmStyle}>
+                                    <select
+                                        className='form-control form-control-sm form-select'
+                                        id='category'
+                                        value={selectedCategory}
+                                        onChange={(e) => {
+                                            setSelectedCategory(e.target.value);
+                                            setFormData({ ...formData, category: e.target.value });
+                                            setSelectedSubcategory(''); // Reset subcategory when category changes
+                                            setFormData(prev => ({ ...prev, subcategory: '' }));
+                                        }}
+                                        required
+                                    >
+                                        <option value=''>Select Category</option>
+                                        {adminCategories.filter(cat => cat.isActive).map((category) => (
+                                            <option key={category._id} value={category.name}>
+                                                {category.name}
                                             </option>
                                         ))}
-                                </select>
+                                    </select>
+                                    <label htmlFor='category'>Category *</label>
+                                </div>
+                            </div>
+                            
+                            {/* Subcategory (Floating Label Select) */}
+                            <div className='col-md-6 mb-3'>
+                                <div className='form-floating' style={formFloatingSmStyle}>
+                                    <select
+                                        className='form-control form-control-sm form-select'
+                                        id='subcategory'
+                                        value={selectedSubcategory}
+                                        onChange={(e) => {
+                                            setSelectedSubcategory(e.target.value);
+                                            setFormData({ ...formData, subcategory: e.target.value });
+                                        }}
+                                        disabled={!selectedCategory}
+                                    >
+                                        <option value=''>Select Subcategory (Optional)</option>
+                                        {selectedCategory && adminCategories
+                                            .find(cat => cat.name === selectedCategory)
+                                            ?.subcategories?.map((sub, index) => (
+                                                <option key={index} value={sub.name}>
+                                                    {sub.name}
+                                                </option>
+                                            ))}
+                                    </select>
+                                    <label htmlFor='subcategory'>Subcategory</label>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Images Section */}
+                        {/* Dynamic Attributes */}
+                        {selectedCategory && (
+                            <div className='mb-3'>
+                                <label className='form-label fw-semibold'>Attributes for {selectedCategory}</label>
+                                {attributeFields.length === 0 && (
+                                    <p className='text-muted mb-1 small'>No attributes defined for this category.</p>
+                                )}
+                                <div className='row g-2'>
+                                    {attributeFields.map((field) => (
+                                        <div className='col-md-4' key={field}>
+                                            <input
+                                                type='text'
+                                                className='form-control form-control-sm'
+                                                placeholder={field}
+                                                value={attributeValues[field] || ''}
+                                                onChange={(e) => handleAttributeChange(field, e.target.value)}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Images Section (Kept standard labels as file input isn't great with floating label) */}
                         <div className='mb-3'>
                             <label className='form-label'>Product Images</label>
                             <p className='text-muted small mb-2'>
@@ -335,7 +539,7 @@ function AdminProductEditScreen() {
                             <div className='mb-3'>
                                 <input 
                                     type='file' 
-                                    className='form-control' 
+                                    className='form-control form-control-sm' // Smaller file input
                                     accept='image/jpeg,image/jpg,image/png,image/gif,image/webp'
                                     multiple
                                     onChange={handleFileSelect}
@@ -348,7 +552,7 @@ function AdminProductEditScreen() {
 
                             {/* Upload Progress */}
                             {uploadProgress && (
-                                <div className='alert alert-info'>
+                                <div className='alert alert-info p-2 small'>
                                     <i className='fas fa-spinner fa-spin me-2'></i>
                                     {uploadProgress}
                                 </div>
@@ -436,15 +640,26 @@ function AdminProductEditScreen() {
                             
                             {/* No Images Warning */}
                             {formData.images.length === 0 && selectedFiles.length === 0 && (
-                                <div className='alert alert-warning mt-2'>
+                                <div className='alert alert-warning mt-2 p-2'>
                                     <small><i className='fas fa-exclamation-triangle me-1'></i>No images selected. Please upload at least one image.</small>
                                 </div>
                             )}
                         </div>
                         
-                        <div className='mb-3'>
-                            <label className='form-label'>Description</label>
-                            <textarea className='form-control' name='description' value={formData.description} onChange={handleChange} rows='5' required></textarea>
+                        {/* Description (Floating Label) */}
+                        <div className='form-floating mb-3' style={formFloatingSmStyle}>
+                            <textarea 
+                                className='form-control' 
+                                id='description' 
+                                name='description' 
+                                value={formData.description} 
+                                onChange={handleChange} 
+                                placeholder='Product Description'
+                                rows='5' 
+                                style={{ height: '100px' }} // Set height for textarea floating label
+                                required
+                            ></textarea>
+                            <label htmlFor='description'>Description</label>
                         </div>
                         
                         <div className='d-grid gap-2'>

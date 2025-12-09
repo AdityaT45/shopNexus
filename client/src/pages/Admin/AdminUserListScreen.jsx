@@ -1,8 +1,10 @@
 // client/src/pages/AdminUserListScreen.jsx
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { AdminContext } from '../../context/AdminContext';
 
 function AdminUserListScreen() {
+    const [page, setPage] = useState(1);
+    const pageSize = 10;
     const { 
         users, 
         fetchAllUsers, 
@@ -37,6 +39,9 @@ const handleRoleChange = (userId, currentRole) => {
 };
 
 
+    const totalPages = Math.max(1, Math.ceil(users.length / pageSize));
+    const pagedUsers = users.slice((page - 1) * pageSize, page * pageSize);
+
     if (adminLoading && users.length === 0) {
         return <h2 className='text-center mt-5'>Loading Users...</h2>;
     }
@@ -52,7 +57,7 @@ const handleRoleChange = (userId, currentRole) => {
                     <table className='table table-striped table-hover mt-3'>
                         <thead>
                             <tr>
-                                <th>ID (last 4)</th>
+                                <th>User ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Role</th>
@@ -60,9 +65,9 @@ const handleRoleChange = (userId, currentRole) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {users.map((user) => (
+                            {pagedUsers.map((user) => (
                                 <tr key={user._id}>
-                                    <td>{user._id}</td>
+                                    <td><code>{user.userId || user._id}</code></td>
                                     <td>{user.name}</td>
                                     <td><a href={`mailto:${user.email}`}>{user.email}</a></td>
                                     <td>
@@ -108,6 +113,14 @@ const handleRoleChange = (userId, currentRole) => {
                             ))}
                         </tbody>
                     </table>
+                    {/* Pagination */}
+                    <div className='d-flex justify-content-between align-items-center'>
+                        <small className='text-muted'>Page {page} of {totalPages}</small>
+                        <div>
+                            <button className='btn btn-sm btn-outline-secondary me-2' disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
+                            <button className='btn btn-sm btn-outline-secondary' disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</button>
+                        </div>
+                    </div>
         </div>
     );
 }

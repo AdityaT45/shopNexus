@@ -1,11 +1,13 @@
 // client/src/pages/AdminProductListScreen.jsx
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminContext } from '../../context/AdminContext';
  
 
 function AdminProductListScreen() {
     const navigate = useNavigate();
+    const [page, setPage] = useState(1);
+    const pageSize = 10;
     const { 
         adminProducts, 
         fetchAdminProducts, 
@@ -29,6 +31,9 @@ function AdminProductListScreen() {
         navigate('/admin/product/new');
     };
 
+    const totalPages = Math.max(1, Math.ceil(adminProducts.length / pageSize));
+    const pagedProducts = adminProducts.slice((page - 1) * pageSize, page * pageSize);
+
     if (adminLoading && adminProducts.length === 0) {
         return <h2 className='text-center mt-5'>Loading Products...</h2>;
     }
@@ -51,9 +56,9 @@ function AdminProductListScreen() {
                     <table className='table table-striped table-hover mt-3'>
                         <thead>
                             <tr>
-                                <th>ID (last 4)</th>
+                                <th>Product ID</th>
                                 <th>Name</th>
-                                <th>image</th>
+                                <th>Image</th>
                                 <th>Price</th>
                                 <th>Category</th>
                                 <th>Count</th>
@@ -61,9 +66,9 @@ function AdminProductListScreen() {
                             </tr>
                         </thead>
                         <tbody>
-                            {adminProducts.map((product) => (
+                            {pagedProducts.map((product) => (
                                 <tr key={product._id}>
-                                    <td>{product._id.substring(product._id.length - 4)}</td>
+                                    <td><code>{product.productId || product._id}</code></td>
                                     <td>{product.name}</td>
                                     <td>
                                         <img 
@@ -97,6 +102,14 @@ function AdminProductListScreen() {
                             ))}
                         </tbody>
                     </table>
+                    {/* Pagination */}
+                    <div className='d-flex justify-content-between align-items-center'>
+                        <small className='text-muted'>Page {page} of {totalPages}</small>
+                        <div>
+                            <button className='btn btn-sm btn-outline-secondary me-2' disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
+                            <button className='btn btn-sm btn-outline-secondary' disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</button>
+                        </div>
+                    </div>
         </div>
     );
 }

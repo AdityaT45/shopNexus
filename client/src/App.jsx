@@ -16,6 +16,7 @@ import ProductScreen from "./pages/ProductScreen";
 import CartScreen from "./pages/CartScreen";
 import CheckoutScreen from "./pages/CheckoutScreen";
 import MyOrdersScreen from "./pages/MyOrdersScreen";
+import WishlistScreen from "./pages/WishlistScreen";
 import UserDashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminUserListScreen from "./pages/Admin/AdminUserListScreen";
@@ -28,19 +29,35 @@ import { AppContext } from "./context/AppContext";
 import AdminBannerListScreen from "./pages/Admin/AdminBannerListScreen";
 import AdminBannerEditScreen from "./pages/Admin/AdminBannerEditScreen";
 import AdminCategoryListScreen from "./pages/Admin/AdminCategoryListScreen";
+import AdminAttributeScreen from "./pages/Admin/AdminAttributeScreen";
 import CategoriesScreen from "./pages/CategoriesScreen";
 import ProfileScreen from "./pages/ProfileScreen";
+import SuperAdminRoute from "./component/SuperAdmin/SuperAdminRoute";
+import SuperAdminDashboard from "./pages/SuperAdmin/SuperAdminDashboard";
+import SuperAdminAdminListScreen from "./pages/SuperAdmin/SuperAdminAdminListScreen";
+import SuperAdminUserListScreen from "./pages/SuperAdmin/SuperAdminUserListScreen";
+import SuperAdminOrderListScreen from "./pages/SuperAdmin/SuperAdminOrderListScreen";
+import SuperAdminProductListScreen from "./pages/SuperAdmin/SuperAdminProductListScreen";
+import SuperAdminLayout from "./component/SuperAdmin/SuperAdminLayout";
+import { SuperAdminProvider } from "./context/SuperAdminContext";
 
 // Component to conditionally render header based on route
 function ConditionalHeader() {
   const location = useLocation();
   const { user } = useContext(AppContext);
   const isAdmin = user?.isAdmin || user?.role === 'Admin';
+  const isSuperAdmin = user?.role === 'Super Admin';
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isSuperAdminRoute = location.pathname.startsWith('/superadmin');
   
   // Don't show header on login/register pages
   if (location.pathname === '/login' || location.pathname === '/register') {
     return null;
+  }
+
+  // Show AdminHeader for super admin routes
+  if (isSuperAdminRoute && isSuperAdmin) {
+    return <AdminHeader />;
   }
 
   // Show AdminHeader for admin routes
@@ -54,10 +71,10 @@ function ConditionalHeader() {
 
 function App() {
   return (
-    <>
+    <SuperAdminProvider>
       <ConditionalHeader />
       <main className="py-3">
-        <div className="container">
+        <div className="container-fluid">
           <Routes>
             {/* Public Routes - No Header on login/register */}
             <Route path="/login" element={<Login />} />
@@ -72,7 +89,19 @@ function App() {
               <Route path="/cart" element={<CartScreen />} />
               <Route path="/checkout" element={<CheckoutScreen />} />
               <Route path="/myorders" element={<MyOrdersScreen />} />
+              <Route path="/wishlist" element={<WishlistScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
+            </Route>
+
+            {/* Super Admin Routes - Protected from Users and Admins */}
+            <Route element={<SuperAdminRoute />}>
+              <Route element={<SuperAdminLayout />}>
+                <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
+                <Route path="/superadmin/admins" element={<SuperAdminAdminListScreen />} />
+                <Route path="/superadmin/users" element={<SuperAdminUserListScreen />} />
+                <Route path="/superadmin/orders" element={<SuperAdminOrderListScreen />} />
+                <Route path="/superadmin/products" element={<SuperAdminProductListScreen />} />
+              </Route>
             </Route>
 
             {/* Admin Routes - Protected from Users */}
@@ -83,6 +112,7 @@ function App() {
                 <Route path="/admin/orders" element={<AdminOrderListScreen />} />
                 <Route path="/admin/products" element={<AdminProductListScreen />}/>
                 <Route path="/admin/categories" element={<AdminCategoryListScreen />}/>
+                <Route path="/admin/attributes" element={<AdminAttributeScreen />}/>
                 <Route path="/admin/banners" element={<AdminBannerListScreen />}/>
                 <Route path="/admin/banner/create" element={<AdminBannerEditScreen />}/>
                 <Route path="/admin/banner/:id" element={<AdminBannerEditScreen />} />
@@ -93,7 +123,7 @@ function App() {
           </Routes>
         </div>
       </main>
-    </>
+    </SuperAdminProvider>
   );
 }
 

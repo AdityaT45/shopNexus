@@ -183,6 +183,23 @@ function AdminSidebar() {
                 </li>
                 <li className="nav-item mb-2">
                     <NavLink 
+                        to="/admin/attributes" 
+                        className={({ isActive }) => 
+                            `nav-link text-white d-flex align-items-center ${isActive ? 'bg-primary active' : 'hover-bg-secondary'}`
+                        }
+                        onClick={() => {
+                            if (window.innerWidth < 992) {
+                                setIsOpen(false);
+                            }
+                        }}
+                        style={{ borderRadius: '8px', padding: '10px 15px', transition: 'all 0.2s ease' }}
+                    >
+                        <i className="fas fa-sliders-h me-3" style={{ fontSize: '18px', width: '24px', textAlign: 'center' }}></i>
+                        <span>Manage Attributes</span>
+                    </NavLink>
+                </li>
+                <li className="nav-item mb-2">
+                    <NavLink 
                         to="/admin/users" 
                         className={({ isActive }) => 
                             `nav-link text-white d-flex align-items-center ${isActive ? 'bg-primary active' : 'hover-bg-secondary'}`

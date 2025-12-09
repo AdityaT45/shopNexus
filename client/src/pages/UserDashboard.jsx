@@ -9,7 +9,7 @@ function UserDashboard() {
     const navigate = useNavigate();
     const [urlSearchParams] = useSearchParams();
     // 🔑 CONTEXT: Consume state and actions
-    const { products, fetchProducts, isLoading, error, user, myOrders, fetchMyOrders, cart, fetchActiveBanners, activeBanners, categories, fetchCategories } = useContext(AppContext);
+    const { products, fetchProducts, isLoading, error, user, myOrders, fetchMyOrders, cart, fetchActiveBanners, activeBanners, categories, fetchCategories, topProducts, fetchTopProducts, fetchWishlist } = useContext(AppContext);
     
     // Get search params from URL
     const keyword = urlSearchParams.get('keyword') || '';
@@ -30,13 +30,15 @@ function UserDashboard() {
         
         // 2. 🔑 ACTION: Call context action with the query string
         fetchProducts(queryString);
+        fetchTopProducts();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [keyword, category, subcategory]);
 
-    // Fetch user's orders
+    // Fetch user's orders and wishlist
     useEffect(() => {
         if (user) {
             fetchMyOrders();
+            fetchWishlist();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
@@ -58,9 +60,9 @@ function UserDashboard() {
     return (
         <>
             {/* Category Navigation Bar */}
-            <CategoryNavigation />
+            {/* <CategoryNavigation /> */}
             
-            <div className='container mt-4'>
+            <div className='container-fluid mt-4'>
             {/* Banners Section */}
             <div className="mb-4">
   {activeBanners && activeBanners.length > 0 ? (
@@ -123,50 +125,44 @@ function UserDashboard() {
   ) : (
     <p>No active banners</p>
   )}
+
+                    {/* TOP SELLING PRODUCTS */}
+                    {topProducts && topProducts.length > 0 && (
+                        <div className='mb-4'>
+                            <div className='d-flex justify-content-between align-items-center mb-3'>
+                                <h2 className='h4 mb-0'>Top Selling Products</h2>
+                            </div>
+                            <div className='row g-3'>
+                                {topProducts.slice(0, 6).map((product) => (
+                                    <div key={product.productId || product._id} className='col-lg-2 col-md-3 col-6'>
+                                        <div
+                                            className='card h-100 border-0 shadow-sm'
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => navigate(`/product/${product.productId || product._id}`)}
+                                        >
+                                            <img
+                                                src={product.image || 'https://via.placeholder.com/150?text=Product'}
+                                                alt={product.name}
+                                                className='card-img-top'
+                                                style={{ height: '120px', objectFit: 'contain', padding: '10px' }}
+                                                onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=No+Image'; }}
+                                            />
+                                            <div className='card-body text-center p-2'>
+                                                <h6 className='card-title mb-1' style={{ fontSize: '13px' }}>{product.name}</h6>
+                                                <small className='text-muted d-block'>Sold: {product.totalSold}</small>
+                                                <strong className='text-success'>₹ {product.price?.toFixed(2) || '0.00'}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 </div>
 
 
-            <h1 className='mb-4'>Welcome back, {user?.name || 'Guest'}!</h1>
+            <h4 className='mb-4'>Welcome back, {user?.name || 'Guest'}!</h4>
 
-            {/* User Statistics */}
-            <div className='row mb-4'>
-                <div className='col-md-4 mb-3'>
-                    <div className='card bg-primary text-white'>
-                        <div className='card-body'>
-                            <h5 className='card-title'>Cart Items</h5>
-                            <h2>{cartItemCount}</h2>
-                            <button 
-                                className='btn btn-light btn-sm mt-2'
-                                onClick={() => navigate('/cart')}
-                            >
-                                View Cart
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div className='col-md-4 mb-3'>
-                    <div className='card bg-success text-white'>
-                        <div className='card-body'>
-                            <h5 className='card-title'>My Orders</h5>
-                            <h2>{myOrders?.length || 0}</h2>
-                            <button 
-                                className='btn btn-light btn-sm mt-2'
-                                onClick={() => navigate('/myorders')}
-                            >
-                                View Orders
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div className='col-md-4 mb-3'>
-                    <div className='card bg-info text-white'>
-                        <div className='card-body'>
-                            <h5 className='card-title'>Account</h5>
-                            <p className='mb-0'>{user?.email}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             {/* Products Section */}
             <div className='mb-4'>

@@ -6,10 +6,11 @@ import { AppContext } from '../context/AppContext';
 function UserHeader() {
     const navigate = useNavigate();
     // 🔑 CONTEXT: Consume state and action
-    const { user, logoutUser, cart } = useContext(AppContext);
+    const { user, logoutUser, cart, wishlist } = useContext(AppContext);
     const [searchKeyword, setSearchKeyword] = useState('');
     
     const cartItemCount = cart?.items?.reduce((acc, item) => acc + (item.quantity || 0), 0) || 0;
+    const wishlistCount = wishlist?.items?.length || 0;
 
     const onLogout = () => {
         logoutUser(); 
@@ -56,9 +57,30 @@ function UserHeader() {
                         
                         {/* Right Side Actions */}
                         <div className='col-md-4 col-lg-3 text-end'>
-                            <div className='d-flex align-items-center justify-content-end gap-3'>
+                            <div className='d-flex align-items-center justify-content-end gap-2 flex-wrap'>
                                 {user ? (
                                     <>
+                                        
+                                        <Link className='text-white text-decoration-none position-relative me-2 ' to='/wishlist' style={{ fontSize: '16px' }}>
+                                            <i className='fas fa-heart'></i>
+                                            {wishlistCount > 0 && (
+                                                <span className='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger' style={{ fontSize: '0.7rem' }}>
+                                                    {wishlistCount}
+                                                </span>
+                                            )}
+                                        </Link>
+                                        <Link className='text-white text-decoration-none position-relative me-2' to='/cart' style={{ fontSize: '16px' }}>
+                                            <i className='fas fa-shopping-cart'></i> 
+                                            {cartItemCount > 0 && (
+                                                <span className='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger' style={{ fontSize: '0.7rem' }}>
+                                                    {cartItemCount}
+                                                </span>
+                                            )}
+                                        </Link>
+                                        <Link className='text-white text-decoration-none me-2' to='/myorders' style={{ fontSize: '16px' }}>
+                                            <i className='fas fa-shopping-bag'></i> 
+                                        </Link>
+
                                         <div className='dropdown'>
                                             <button className='btn btn-link text-white text-decoration-none dropdown-toggle d-flex align-items-center' data-bs-toggle='dropdown'>
                                                 <img
@@ -79,14 +101,6 @@ function UserHeader() {
                                                 <li><button className='dropdown-item' onClick={onLogout}><i className='fas fa-sign-out-alt me-2'></i>Logout</button></li>
                                             </ul>
                                         </div>
-                                        <Link className='text-white text-decoration-none position-relative' to='/cart'>
-                                            <i className='fas fa-shopping-cart fs-5'></i> Cart
-                                            {cartItemCount > 0 && (
-                                                <span className='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger' style={{ fontSize: '0.7rem' }}>
-                                                    {cartItemCount}
-                                                </span>
-                                            )}
-                                        </Link>
                                     </>
                                 ) : (
                                     <>

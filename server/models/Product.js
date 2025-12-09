@@ -29,11 +29,21 @@ const productSchema = mongoose.Schema(
             type: String,
             default: '',
         },
+        originalPrice: {
+            type: Number,
+            default: 0,
+        },
+        discountPercentage: {
+            type: Number,
+            default: 0,
+            min: 0,
+            max: 100,
+        },
         images: { // Array of image URLs for product gallery
             type: [String],
             required: true,
             validate: {
-                validator: function(v) {
+                validator: function (v) {
                     return v && v.length > 0; // At least one image required
                 },
                 message: 'At least one image is required'
