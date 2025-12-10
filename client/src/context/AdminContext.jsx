@@ -177,27 +177,34 @@ const deleteUser = async (userId) => {
     }
 
     // ATTRIBUTES MANAGEMENT
-    const fetchAttributesForCategory = useCallback(async (category) => {
-        if (!category) return { category: '', fields: [] };
+    const fetchAttributesForSubcategory = useCallback(async (category, subcategory) => {
+        if (!category || !subcategory) return { category, subcategory, fields: [] };
         dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
         try {
-            const response = await axios.get(`/api/attributes/${encodeURIComponent(category)}`, getConfig());
-            const payload = response.data || { category, fields: [] };
+            const response = await axios.get(
+                `/api/attributes/${encodeURIComponent(category)}/${encodeURIComponent(subcategory)}`,
+                getConfig()
+            );
+            const payload = response.data || { category, subcategory, fields: [] };
             dispatch({ type: 'SET_ATTRIBUTES_FOR_CATEGORY', payload });
             return payload;
         } catch (error) {
             const message = error.response?.data?.message || 'Failed to fetch attributes.';
             dispatch({ type: 'SET_ADMIN_ERROR', payload: message });
-            return { category, fields: [] };
+            return { category, subcategory, fields: [] };
         } finally {
             dispatch({ type: 'SET_ADMIN_LOADING', payload: false });
         }
     }, [dispatch]);
 
-    const saveAttributesForCategory = useCallback(async (category, fields) => {
+    const saveAttributesForSubcategory = useCallback(async (category, subcategory, fields) => {
         dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
         try {
-            const response = await axios.post('/api/attributes', { category, fields }, getConfig());
+            const response = await axios.post(
+                '/api/attributes',
+                { category, subcategory, fields },
+                getConfig()
+            );
             dispatch({ type: 'SET_ATTRIBUTES_FOR_CATEGORY', payload: response.data });
             return true;
         } catch (error) {
@@ -334,8 +341,8 @@ const deleteUser = async (userId) => {
                 deleteCategory,
 
                 // ⬅️ ATTRIBUTES ACTIONS
-                fetchAttributesForCategory,
-                saveAttributesForCategory,
+                fetchAttributesForSubcategory,
+                saveAttributesForSubcategory,
             }}
         >
             {children}

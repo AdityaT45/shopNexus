@@ -26,6 +26,7 @@ const superAdminRouter=require('./routes/superAdminRoutes')
 const attributeRouter=require('./routes/attributeRoutes')
 const uploadRoutes = require("./routes/uploadRoutes");
 const wishlistRouter = require('./routes/wishlistRoutes');
+const footerRouter = require('./routes/footerRoutes');
 
 
 
@@ -40,6 +41,7 @@ app.use('/api/superadmin',superAdminRouter)
 app.use('/api/attributes',attributeRouter)
 app.use("/api/upload", uploadRoutes);
 app.use('/api/wishlist', wishlistRouter);
+app.use('/api/footer', footerRouter);
 
 
 const path = require("path");

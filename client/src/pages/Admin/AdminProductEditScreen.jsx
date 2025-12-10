@@ -10,7 +10,7 @@ function AdminProductEditScreen() {
     const navigate = useNavigate();
     
     // AdminContext for creation and updating
-    const { createProduct, updateProduct, adminLoading, adminError, isUserAdmin, fetchCategories, categories: adminCategories, fetchAttributesForCategory, attributesByCategory } = useContext(AdminContext);
+    const { createProduct, updateProduct, adminLoading, adminError, isUserAdmin, fetchCategories, categories: adminCategories, fetchAttributesForSubcategory } = useContext(AdminContext);
     
     // AppContext for fetching product details to pre-populate the form
     const { getProductById } = useContext(AppContext);
@@ -109,28 +109,28 @@ function AdminProductEditScreen() {
         }
     }, [isEditMode, productId, getProductById, isUserAdmin, navigate]);
 
-    // Load attributes when category changes
+    // Load attributes when category and subcategory change
     useEffect(() => {
         const loadAttributes = async () => {
-            if (!selectedCategory) {
+            if (!selectedCategory || !selectedSubcategory) {
                 setAttributeFields([]);
                 setAttributeValues({});
                 return;
             }
-            const result = await fetchAttributesForCategory(selectedCategory);
+            const result = await fetchAttributesForSubcategory(selectedCategory, selectedSubcategory);
             const fields = result.fields || [];
             setAttributeFields(fields);
             setAttributeValues((prev) => {
                 const next = {};
                 fields.forEach((f) => {
-                    next[f] = prev[f] || '';
+                    const fieldName = typeof f === 'string' ? f : f.name;
+                    next[fieldName] = prev[fieldName] || '';
                 });
                 return next;
             });
         };
         loadAttributes();
-    // fetchAttributesForCategory is memoized in context to avoid re-run loops
-    }, [selectedCategory, fetchAttributesForCategory]);
+    }, [selectedCategory, selectedSubcategory, fetchAttributesForSubcategory]);
 
     const getConfig = () => {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -506,24 +506,41 @@ function AdminProductEditScreen() {
                         </div>
 
                         {/* Dynamic Attributes */}
-                        {selectedCategory && (
+                        {selectedCategory && selectedSubcategory && (
                             <div className='mb-3'>
-                                <label className='form-label fw-semibold'>Attributes for {selectedCategory}</label>
+                                <label className='form-label fw-semibold'>
+                                    Attributes for {selectedCategory} - {selectedSubcategory}
+                                </label>
                                 {attributeFields.length === 0 && (
-                                    <p className='text-muted mb-1 small'>No attributes defined for this category.</p>
+                                    <p className='text-muted mb-1 small'>
+                                        No attributes defined for this subcategory. Go to Manage Attributes to add fields.
+                                    </p>
                                 )}
                                 <div className='row g-2'>
-                                    {attributeFields.map((field) => (
-                                        <div className='col-md-4' key={field}>
-                                            <input
-                                                type='text'
-                                                className='form-control form-control-sm'
-                                                placeholder={field}
-                                                value={attributeValues[field] || ''}
-                                                onChange={(e) => handleAttributeChange(field, e.target.value)}
-                                            />
-                                        </div>
-                                    ))}
+                                    {attributeFields.map((field, idx) => {
+                                        const fieldName = typeof field === 'string' ? field : field.name;
+                                        const fieldType = typeof field === 'object' ? field.type : 'string';
+                                        return (
+                                            <div className='col-md-4' key={idx}>
+                                                <label className='form-label small'>
+                                                    {fieldName} ({fieldType})
+                                                </label>
+                                                <input
+                                                    type={fieldType === 'number' ? 'number' : 'text'}
+                                                    className='form-control form-control-sm'
+                                                    placeholder={`Enter ${fieldName}`}
+                                                    value={attributeValues[fieldName] || ''}
+                                                    onChange={(e) =>
+                                                        handleAttributeChange(
+                                                            fieldName,
+                                                            fieldType === 'number' ? parseFloat(e.target.value) || 0 : e.target.value
+                                                        )
+                                                    }
+                                                    step={fieldType === 'number' ? '0.01' : undefined}
+                                                />
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}

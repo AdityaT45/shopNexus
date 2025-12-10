@@ -1,21 +1,32 @@
+// client/src/pages/Admin/AdminAttributeScreen.jsx
 import React, { useEffect, useState, useContext } from 'react';
 import { AdminContext } from '../../context/AdminContext';
+import axios from 'axios';
 
 function AdminAttributeScreen() {
     const {
         categories,
         fetchCategories,
-        fetchAttributesForCategory,
-        saveAttributesForCategory,
         adminLoading,
         adminError,
-        isUserAdmin
+        isUserAdmin,
     } = useContext(AdminContext);
 
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedSubcategory, setSelectedSubcategory] = useState('');
     const [fields, setFields] = useState([]);
-    const [newField, setNewField] = useState('');
+    const [newField, setNewField] = useState({ name: '', type: 'string' });
     const [statusMessage, setStatusMessage] = useState('');
+
+    const getConfig = () => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const token = user ? user.token : null;
+        return {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        };
+    };
 
     useEffect(() => {
         if (isUserAdmin) {
@@ -26,25 +37,33 @@ function AdminAttributeScreen() {
 
     useEffect(() => {
         const loadAttributes = async () => {
-            if (!selectedCategory) {
+            if (!selectedCategory || !selectedSubcategory) {
                 setFields([]);
                 return;
             }
-            const result = await fetchAttributesForCategory(selectedCategory);
-            setFields(result.fields || []);
+            try {
+                const response = await axios.get(
+                    `/api/attributes/${selectedCategory}/${selectedSubcategory}`,
+                    getConfig()
+                );
+                setFields(response.data.fields || []);
+            } catch (error) {
+                setFields([]);
+            }
         };
         loadAttributes();
-    }, [selectedCategory, fetchAttributesForCategory]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedCategory, selectedSubcategory]);
 
     const handleAddField = () => {
-        const trimmed = newField.trim();
+        const trimmed = newField.name.trim();
         if (!trimmed) return;
-        if (fields.includes(trimmed)) {
-            setNewField('');
+        if (fields.some((f) => f.name === trimmed)) {
+            setNewField({ name: '', type: 'string' });
             return;
         }
-        setFields([...fields, trimmed]);
-        setNewField('');
+        setFields([...fields, { name: trimmed, type: newField.type }]);
+        setNewField({ name: '', type: 'string' });
     };
 
     const handleRemoveField = (index) => {
@@ -54,13 +73,28 @@ function AdminAttributeScreen() {
     const handleSave = async (e) => {
         e.preventDefault();
         setStatusMessage('');
-        if (!selectedCategory) {
-            setStatusMessage('Please select a category first.');
+        if (!selectedCategory || !selectedSubcategory) {
+            setStatusMessage('Please select both category and subcategory.');
             return;
         }
-        const success = await saveAttributesForCategory(selectedCategory, fields);
-        setStatusMessage(success ? 'Attributes saved.' : 'Failed to save attributes.');
+        try {
+            await axios.post(
+                '/api/attributes',
+                {
+                    category: selectedCategory,
+                    subcategory: selectedSubcategory,
+                    fields: fields,
+                },
+                getConfig()
+            );
+            setStatusMessage('Attributes saved successfully!');
+        } catch (error) {
+            setStatusMessage('Failed to save attributes.');
+        }
     };
+
+    const selectedCategoryData = categories.find((cat) => cat.name === selectedCategory);
+    const subcategories = selectedCategoryData?.subcategories || [];
 
     if (!isUserAdmin) {
         return <h2 className='text-center mt-5 text-danger'>Access Denied. Admin privileges required.</h2>;
@@ -73,39 +107,68 @@ function AdminAttributeScreen() {
             </div>
 
             {adminError && <div className='alert alert-danger'>{adminError}</div>}
-            {statusMessage && <div className='alert alert-info py-2'>{statusMessage}</div>}
+            {statusMessage && (
+                <div className={`alert ${statusMessage.includes('success') ? 'alert-success' : 'alert-info'} py-2`}>
+                    {statusMessage}
+                </div>
+            )}
 
             <div className='card'>
                 <div className='card-body'>
                     <form onSubmit={handleSave}>
-                        <div className='mb-3'>
-                            <label className='form-label'>Category</label>
-                            <select
-                                className='form-select'
-                                value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
-                                required
-                            >
-                                <option value=''>Select category</option>
-                                {categories
-                                    .filter((cat) => cat.isActive)
-                                    .map((cat) => (
-                                        <option key={cat._id} value={cat.name}>
-                                            {cat.name}
+                        <div className='row mb-3'>
+                            <div className='col-md-6'>
+                                <label className='form-label'>Category *</label>
+                                <select
+                                    className='form-select'
+                                    value={selectedCategory}
+                                    onChange={(e) => {
+                                        setSelectedCategory(e.target.value);
+                                        setSelectedSubcategory('');
+                                        setFields([]);
+                                    }}
+                                    required
+                                >
+                                    <option value=''>Select category</option>
+                                    {categories
+                                        .filter((cat) => cat.isActive)
+                                        .map((cat) => (
+                                            <option key={cat._id} value={cat.name}>
+                                                {cat.name}
+                                            </option>
+                                        ))}
+                                </select>
+                            </div>
+                            <div className='col-md-6'>
+                                <label className='form-label'>Subcategory *</label>
+                                <select
+                                    className='form-select'
+                                    value={selectedSubcategory}
+                                    onChange={(e) => {
+                                        setSelectedSubcategory(e.target.value);
+                                    }}
+                                    required
+                                    disabled={!selectedCategory}
+                                >
+                                    <option value=''>Select subcategory</option>
+                                    {subcategories.map((sub, idx) => (
+                                        <option key={idx} value={sub.name}>
+                                            {sub.name}
                                         </option>
                                     ))}
-                            </select>
+                                </select>
+                            </div>
                         </div>
 
                         <div className='mb-3'>
-                            <label className='form-label'>Fields</label>
+                            <label className='form-label'>Attribute Fields</label>
                             <div className='input-group mb-2'>
                                 <input
                                     type='text'
                                     className='form-control'
-                                    placeholder='Enter field name (e.g., Color)'
-                                    value={newField}
-                                    onChange={(e) => setNewField(e.target.value)}
+                                    placeholder='Enter field name (e.g., Color, Size)'
+                                    value={newField.name}
+                                    onChange={(e) => setNewField({ ...newField, name: e.target.value })}
                                     onKeyPress={(e) => {
                                         if (e.key === 'Enter') {
                                             e.preventDefault();
@@ -113,6 +176,15 @@ function AdminAttributeScreen() {
                                         }
                                     }}
                                 />
+                                <select
+                                    className='form-select'
+                                    style={{ maxWidth: '150px' }}
+                                    value={newField.type}
+                                    onChange={(e) => setNewField({ ...newField, type: e.target.value })}
+                                >
+                                    <option value='string'>String</option>
+                                    <option value='number'>Number</option>
+                                </select>
                                 <button type='button' className='btn btn-outline-secondary' onClick={handleAddField}>
                                     Add
                                 </button>
@@ -120,8 +192,8 @@ function AdminAttributeScreen() {
                             {fields.length > 0 ? (
                                 <div className='d-flex flex-wrap gap-2'>
                                     {fields.map((field, idx) => (
-                                        <span key={idx} className='badge bg-primary p-2'>
-                                            {field}
+                                        <span key={idx} className='badge bg-primary p-2 d-flex align-items-center'>
+                                            {field.name} ({field.type})
                                             <button
                                                 type='button'
                                                 className='btn-close btn-close-white ms-2'
@@ -146,4 +218,3 @@ function AdminAttributeScreen() {
 }
 
 export default AdminAttributeScreen;
-

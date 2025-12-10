@@ -30,6 +30,8 @@ import AdminBannerListScreen from "./pages/Admin/AdminBannerListScreen";
 import AdminBannerEditScreen from "./pages/Admin/AdminBannerEditScreen";
 import AdminCategoryListScreen from "./pages/Admin/AdminCategoryListScreen";
 import AdminAttributeScreen from "./pages/Admin/AdminAttributeScreen";
+import AdminDiscountScreen from "./pages/Admin/AdminDiscountScreen";
+import AdminFooterScreen from "./pages/Admin/AdminFooterScreen";
 import CategoriesScreen from "./pages/CategoriesScreen";
 import ProfileScreen from "./pages/ProfileScreen";
 import SuperAdminRoute from "./component/SuperAdmin/SuperAdminRoute";
@@ -113,6 +115,8 @@ function App() {
                 <Route path="/admin/products" element={<AdminProductListScreen />}/>
                 <Route path="/admin/categories" element={<AdminCategoryListScreen />}/>
                 <Route path="/admin/attributes" element={<AdminAttributeScreen />}/>
+                <Route path="/admin/discounts" element={<AdminDiscountScreen />}/>
+                <Route path="/admin/footer" element={<AdminFooterScreen />}/>
                 <Route path="/admin/banners" element={<AdminBannerListScreen />}/>
                 <Route path="/admin/banner/create" element={<AdminBannerEditScreen />}/>
                 <Route path="/admin/banner/:id" element={<AdminBannerEditScreen />} />
