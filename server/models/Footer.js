@@ -49,3 +49,4 @@ const footerSchema = mongoose.Schema(
 const Footer = mongoose.model('Footer', footerSchema);
 module.exports = Footer;
 
+

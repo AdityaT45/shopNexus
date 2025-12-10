@@ -27,7 +27,8 @@ function AdminUserListScreen() {
         if (adminError) {
             console.error(adminError);
         }
-    }, [isUserAdmin, adminError, fetchAllUsers]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isUserAdmin]);
 
     // Apply filters
     useEffect(() => {
@@ -83,35 +84,35 @@ function AdminUserListScreen() {
             {adminError && <div className='alert alert-danger'>{adminError}</div>}
 
             {/* Filters */}
-            <div className='card mb-4'>
-                <div className='card-body'>
-                    <div className='row g-3'>
-                        <div className='col-md-6'>
-                            <label className='form-label'>Search</label>
-                            <input
-                                type='text'
-                                className='form-control'
-                                placeholder='Search by name, email or user ID...'
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <div className='col-md-4'>
-                            <label className='form-label'>Role</label>
-                            <select
-                                className='form-select'
-                                value={roleFilter}
-                                onChange={(e) => setRoleFilter(e.target.value)}
-                            >
-                                <option value='all'>All Roles</option>
-                                <option value='User'>User</option>
-                                <option value='Admin'>Admin</option>
-                                <option value='Super Admin'>Super Admin</option>
-                            </select>
-                        </div>
-                        <div className='col-md-2 d-flex align-items-end'>
+            <div className='mb-3 p-3 bg-light rounded border'>
+                <div className='row g-2 align-items-end'>
+                    <div className='col-md-6'>
+                        <label className='form-label small text-muted mb-1'>Search</label>
+                        <input
+                            type='text'
+                            className='form-control form-control-sm'
+                            placeholder='Search by name, email or user ID...'
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className='col-md-4'>
+                        <label className='form-label small text-muted mb-1'>Role</label>
+                        <select
+                            className='form-select form-select-sm'
+                            value={roleFilter}
+                            onChange={(e) => setRoleFilter(e.target.value)}
+                        >
+                            <option value='all'>All Roles</option>
+                            <option value='User'>User</option>
+                            <option value='Admin'>Admin</option>
+                            <option value='Super Admin'>Super Admin</option>
+                        </select>
+                    </div>
+                    <div className='col-md-2'>
+                        <div className='d-flex gap-2'>
                             <button
-                                className='btn btn-outline-secondary w-100'
+                                className='btn btn-outline-secondary btn-sm flex-fill'
                                 onClick={() => {
                                     setSearchTerm('');
                                     setRoleFilter('all');
@@ -119,12 +120,10 @@ function AdminUserListScreen() {
                             >
                                 <i className='fas fa-times me-1'></i> Clear
                             </button>
+                            <span className='badge bg-secondary align-self-center'>
+                                {filteredUsers.length}/{users.length}
+                            </span>
                         </div>
-                    </div>
-                    <div className='mt-2'>
-                        <small className='text-muted'>
-                            Showing {filteredUsers.length} of {users.length} users
-                        </small>
                     </div>
                 </div>
             </div>

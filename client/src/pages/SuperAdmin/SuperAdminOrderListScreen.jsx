@@ -77,48 +77,48 @@ function SuperAdminOrderListScreen() {
             {superAdminError && <div className='alert alert-danger'>{superAdminError}</div>}
 
             {/* Filters */}
-            <div className='card mb-4'>
-                <div className='card-body'>
-                    <div className='row g-3'>
-                        <div className='col-md-4'>
-                            <label className='form-label'>Search</label>
-                            <input
-                                type='text'
-                                className='form-control'
-                                placeholder='Search by Order ID, User name or email...'
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <div className='col-md-3'>
-                            <label className='form-label'>Status</label>
-                            <select
-                                className='form-select'
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                            >
-                                <option value='all'>All Status</option>
-                                <option value='Pending'>Pending</option>
-                                <option value='Shipped'>Shipped</option>
-                                <option value='Delivered'>Delivered</option>
-                            </select>
-                        </div>
-                        <div className='col-md-3'>
-                            <label className='form-label'>Date Range</label>
-                            <select
-                                className='form-select'
-                                value={dateFilter}
-                                onChange={(e) => setDateFilter(e.target.value)}
-                            >
-                                <option value='all'>All Time</option>
-                                <option value='today'>Today</option>
-                                <option value='week'>Last 7 Days</option>
-                                <option value='month'>Last 30 Days</option>
-                            </select>
-                        </div>
-                        <div className='col-md-2 d-flex align-items-end'>
+            <div className='mb-3 p-3 bg-light rounded border'>
+                <div className='row g-2 align-items-end'>
+                    <div className='col-md-4'>
+                        <label className='form-label small text-muted mb-1'>Search</label>
+                        <input
+                            type='text'
+                            className='form-control form-control-sm'
+                            placeholder='Search by Order ID, User name or email...'
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className='col-md-3'>
+                        <label className='form-label small text-muted mb-1'>Status</label>
+                        <select
+                            className='form-select form-select-sm'
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value='all'>All Status</option>
+                            <option value='Pending'>Pending</option>
+                            <option value='Shipped'>Shipped</option>
+                            <option value='Delivered'>Delivered</option>
+                        </select>
+                    </div>
+                    <div className='col-md-3'>
+                        <label className='form-label small text-muted mb-1'>Date Range</label>
+                        <select
+                            className='form-select form-select-sm'
+                            value={dateFilter}
+                            onChange={(e) => setDateFilter(e.target.value)}
+                        >
+                            <option value='all'>All Time</option>
+                            <option value='today'>Today</option>
+                            <option value='week'>Last 7 Days</option>
+                            <option value='month'>Last 30 Days</option>
+                        </select>
+                    </div>
+                    <div className='col-md-2'>
+                        <div className='d-flex gap-2'>
                             <button
-                                className='btn btn-outline-secondary w-100'
+                                className='btn btn-outline-secondary btn-sm flex-fill'
                                 onClick={() => {
                                     setSearchTerm('');
                                     setStatusFilter('all');
@@ -127,12 +127,10 @@ function SuperAdminOrderListScreen() {
                             >
                                 <i className='fas fa-times me-1'></i> Clear
                             </button>
+                            <span className='badge bg-secondary align-self-center'>
+                                {filteredOrders.length}/{orders.length}
+                            </span>
                         </div>
-                    </div>
-                    <div className='mt-2'>
-                        <small className='text-muted'>
-                            Showing {filteredOrders.length} of {orders.length} orders
-                        </small>
                     </div>
                 </div>
             </div>

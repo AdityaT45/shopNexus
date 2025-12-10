@@ -27,7 +27,7 @@ export const AdminProvider = ({ children }) => {
     // --- Admin Action Functions ---
 
     // 🔑 A1. Fetch All Users
-    const fetchAllUsers = async () => {
+    const fetchAllUsers = useCallback(async () => {
         dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
         try {
             const response = await axios.get('/api/users', getConfig());
@@ -38,7 +38,7 @@ export const AdminProvider = ({ children }) => {
         } finally {
             dispatch({ type: 'SET_ADMIN_LOADING', payload: false });
         }
-    };
+    }, [dispatch]);
     
     // 🔑 A2. Update User Role (Admin/Not Admin)
    const updateUserRole = async (userId, newRole) => {
@@ -90,7 +90,7 @@ const deleteUser = async (userId) => {
 
     
     // 🔑 A4. Fetch All Orders (for Admin)
-    const fetchAllOrders = async () => {
+    const fetchAllOrders = useCallback(async () => {
         dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
         try {
             const response = await axios.get('/api/orders', getConfig());
@@ -101,7 +101,7 @@ const deleteUser = async (userId) => {
         } finally {
             dispatch({ type: 'SET_ADMIN_LOADING', payload: false });
         }
-    };
+    }, [dispatch]);
 
     // 🔑 A5. Update Order Status (e.g., to Delivered)
     const updateOrderStatus = async (orderId, status) => {
@@ -131,7 +131,7 @@ const deleteUser = async (userId) => {
     };
     
     // 🔑 A6. Fetch Admin Products (all products, including inactive)
-    const fetchAdminProducts = async () => {
+    const fetchAdminProducts = useCallback(async () => {
         dispatch({ type: 'SET_ADMIN_LOADING', payload: true });
         try {
             // Assuming your backend has an admin-specific endpoint for all products
@@ -143,7 +143,7 @@ const deleteUser = async (userId) => {
         } finally {
             dispatch({ type: 'SET_ADMIN_LOADING', payload: false });
         }
-    };
+    }, [dispatch]);
 
 
     //create product

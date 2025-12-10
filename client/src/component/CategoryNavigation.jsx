@@ -11,8 +11,9 @@ function CategoryNavigation() {
     const activeCategories = categories?.filter(cat => cat.isActive) || [];
 
     const handleCategoryClick = (categoryName) => {
-        navigate(`/dashboard?category=${encodeURIComponent(categoryName)}`);
-        window.location.reload();
+        if (categoryName) {
+            navigate(`/products?category=${encodeURIComponent(categoryName)}`);
+        }
     };
 
     if (activeCategories.length === 0) {

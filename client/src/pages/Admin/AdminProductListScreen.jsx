@@ -30,7 +30,8 @@ function AdminProductListScreen() {
         if (adminError) {
             console.error(adminError);
         }
-    }, [isUserAdmin, adminError, fetchAdminProducts]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isUserAdmin]);
 
     // Apply filters
     useEffect(() => {
@@ -95,61 +96,61 @@ function AdminProductListScreen() {
             {adminError && <div className='alert alert-danger'>{adminError}</div>}
 
             {/* Filters */}
-            <div className='card mb-4'>
-                <div className='card-body'>
-                    <div className='row g-3'>
-                        <div className='col-md-3'>
-                            <label className='form-label'>Search</label>
-                            <input
-                                type='text'
-                                className='form-control'
-                                placeholder='Search by name or ID...'
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <div className='col-md-2'>
-                            <label className='form-label'>Category</label>
-                            <select
-                                className='form-select'
-                                value={categoryFilter}
-                                onChange={(e) => setCategoryFilter(e.target.value)}
-                            >
-                                <option value=''>All Categories</option>
-                                {categories.map((cat) => (
-                                    <option key={cat} value={cat}>
-                                        {cat}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className='col-md-2'>
-                            <label className='form-label'>Stock Status</label>
-                            <select
-                                className='form-select'
-                                value={stockFilter}
-                                onChange={(e) => setStockFilter(e.target.value)}
-                            >
-                                <option value='all'>All</option>
-                                <option value='in-stock'>In Stock</option>
-                                <option value='out-of-stock'>Out of Stock</option>
-                            </select>
-                        </div>
-                        <div className='col-md-2'>
-                            <label className='form-label'>Discount</label>
-                            <select
-                                className='form-select'
-                                value={discountFilter}
-                                onChange={(e) => setDiscountFilter(e.target.value)}
-                            >
-                                <option value='all'>All</option>
-                                <option value='with-discount'>With Discount</option>
-                                <option value='without-discount'>No Discount</option>
-                            </select>
-                        </div>
-                        <div className='col-md-3 d-flex align-items-end'>
+            <div className='mb-3 p-3 bg-light rounded border'>
+                <div className='row g-2 align-items-end'>
+                    <div className='col-md-3'>
+                        <label className='form-label small text-muted mb-1'>Search</label>
+                        <input
+                            type='text'
+                            className='form-control form-control-sm'
+                            placeholder='Search by name or ID...'
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className='col-md-2'>
+                        <label className='form-label small text-muted mb-1'>Category</label>
+                        <select
+                            className='form-select form-select-sm'
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                        >
+                            <option value=''>All Categories</option>
+                            {categories.map((cat) => (
+                                <option key={cat} value={cat}>
+                                    {cat}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className='col-md-2'>
+                        <label className='form-label small text-muted mb-1'>Stock</label>
+                        <select
+                            className='form-select form-select-sm'
+                            value={stockFilter}
+                            onChange={(e) => setStockFilter(e.target.value)}
+                        >
+                            <option value='all'>All</option>
+                            <option value='in-stock'>In Stock</option>
+                            <option value='out-of-stock'>Out of Stock</option>
+                        </select>
+                    </div>
+                    <div className='col-md-2'>
+                        <label className='form-label small text-muted mb-1'>Discount</label>
+                        <select
+                            className='form-select form-select-sm'
+                            value={discountFilter}
+                            onChange={(e) => setDiscountFilter(e.target.value)}
+                        >
+                            <option value='all'>All</option>
+                            <option value='with-discount'>With Discount</option>
+                            <option value='without-discount'>No Discount</option>
+                        </select>
+                    </div>
+                    <div className='col-md-3'>
+                        <div className='d-flex gap-2'>
                             <button
-                                className='btn btn-outline-secondary w-100'
+                                className='btn btn-outline-secondary btn-sm flex-fill'
                                 onClick={() => {
                                     setSearchTerm('');
                                     setCategoryFilter('');
@@ -157,14 +158,12 @@ function AdminProductListScreen() {
                                     setDiscountFilter('all');
                                 }}
                             >
-                                <i className='fas fa-times me-1'></i> Clear Filters
+                                <i className='fas fa-times me-1'></i> Clear
                             </button>
+                            <span className='badge bg-secondary align-self-center'>
+                                {filteredProducts.length}/{adminProducts.length}
+                            </span>
                         </div>
-                    </div>
-                    <div className='mt-2'>
-                        <small className='text-muted'>
-                            Showing {filteredProducts.length} of {adminProducts.length} products
-                        </small>
                     </div>
                 </div>
             </div>

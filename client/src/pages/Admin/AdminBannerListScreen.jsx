@@ -51,71 +51,99 @@ const AdminBannerListScreen = () => {
           {loading && <h4>Loading...</h4>}
           {error && <div className="alert alert-danger">{error}</div>}
 
-          <table className="table table-striped table-hover mt-3">
-            <thead className="table-dark">
-              <tr>
-                <th>Banner Image</th>
-                <th>Title</th>
-                <th>Actions</th>
-                <th >Status</th>
-
-              </tr>
-            </thead>
-
-            <tbody>
-              {banners.map((banner) => (
-                <tr key={banner._id}>
-                  <td>
-                    <img
-  src={banner.image.startsWith("http") ? banner.image : `http://localhost:5000${banner.image}`}
-  alt="banner"
-  style={{ width: "100px", height: "60px", objectFit: "cover" }}
-/>
-                  </td>
-
-                  <td>{banner.title}</td>
-
-                  <td>
-                    <Link to={`/admin/banner/${banner._id}`} className="btn btn-warning btn-sm">
-  Edit
-</Link>
-
-                    <button
-                      onClick={() => deleteHandler(banner._id)}
-                      className="btn btn-sm btn-outline-danger"
-                    >
-                      <i className="fas fa-trash"></i> Delete
-                    </button>
-                  </td>
-
-                  <td className="border p-2">
-                    <select
-                      className="form-select form-select-sm"
-                      value={banner.status || "Inactive"}
-                      onChange={(e) => handleStatusChange(banner._id, e.target.value)}
-                      disabled={loading}
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
-                    </select>
-</td>
-
-                </tr>
-              ))}
-
-              
-
-              {banners.length === 0 && (
+          <div className="table-responsive">
+            <table className="table table-striped table-hover mt-3">
+              <thead className="table-dark">
                 <tr>
-                  <td colSpan="4" className="text-center py-3 text-muted">
-                    No banners found.
-                  </td>
+                  <th style={{ width: "120px" }}>Image</th>
+                  <th>Title</th>
+                  <th>Link</th>
+                  <th style={{ width: "150px" }}>Status</th>
+                  <th style={{ width: "180px" }}>Actions</th>
                 </tr>
-              )}
+              </thead>
+
+              <tbody>
+                {banners.map((banner) => (
+                  <tr key={banner._id}>
+                    <td>
+                      <img
+                        src={banner.image.startsWith("http") ? banner.image : `http://localhost:5000${banner.image}`}
+                        alt={banner.title}
+                        style={{ width: "100px", height: "60px", objectFit: "cover", borderRadius: "4px" }}
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/100x60?text=Error';
+                        }}
+                      />
+                    </td>
+
+                    <td>
+                      <strong>{banner.title}</strong>
+                    </td>
+
+                    <td>
+                      {banner.link ? (
+                        <a 
+                          href={banner.link.startsWith('http') ? banner.link : `#${banner.link}`}
+                          target={banner.link.startsWith('http') ? '_blank' : '_self'}
+                          rel="noopener noreferrer"
+                          className="text-decoration-none"
+                        >
+                          <i className="fas fa-link me-1"></i>
+                          {banner.link.length > 30 ? `${banner.link.substring(0, 30)}...` : banner.link}
+                        </a>
+                      ) : (
+                        <span className="text-muted">No link</span>
+                      )}
+                    </td>
+
+                    <td>
+                      <select
+                        className="form-select form-select-sm"
+                        value={banner.status || "Inactive"}
+                        onChange={(e) => handleStatusChange(banner._id, e.target.value)}
+                        disabled={loading}
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </td>
+
+                    <td>
+                      <div className="btn-group" role="group">
+                        <Link 
+                          to={`/admin/banner/${banner._id}`} 
+                          className="btn btn-warning btn-sm"
+                          title="Edit Banner"
+                        >
+                          <i className="fas fa-edit"></i>
+                        </Link>
+                        <button
+                          onClick={() => deleteHandler(banner._id)}
+                          className="btn btn-sm btn-outline-danger"
+                          title="Delete Banner"
+                          disabled={loading}
+                        >
+                          <i className="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
 
               
-            </tbody>
-          </table>
+
+                {banners.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="text-center py-5 text-muted">
+                      <i className="fas fa-image fa-3x mb-3 d-block"></i>
+                      No banners found. Create your first banner to get started.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
       </div>
     </div>
   );

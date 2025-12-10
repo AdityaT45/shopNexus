@@ -22,3 +22,4 @@ router.delete('/:id', protect, admin, deleteFooterSection);
 
 module.exports = router;
 
+

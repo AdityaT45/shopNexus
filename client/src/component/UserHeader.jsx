@@ -20,9 +20,7 @@ function UserHeader() {
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchKeyword.trim()) {
-            navigate(`/dashboard?keyword=${encodeURIComponent(searchKeyword.trim())}`);
-            // Reload page to trigger product fetch with new keyword
-            window.location.reload();
+            navigate(`/products?keyword=${encodeURIComponent(searchKeyword.trim())}`);
         }
     };
 

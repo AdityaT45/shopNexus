@@ -5,6 +5,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 // Import Components
 import AdminHeader from "./component/AdminHeader";
 import UserHeader from "./component/UserHeader";
+import Footer from "./component/Footer";
 import UserRoute from "./component/UserRoute";
 
 // Import Pages (will be created in upcoming steps)
@@ -33,6 +34,7 @@ import AdminAttributeScreen from "./pages/Admin/AdminAttributeScreen";
 import AdminDiscountScreen from "./pages/Admin/AdminDiscountScreen";
 import AdminFooterScreen from "./pages/Admin/AdminFooterScreen";
 import CategoriesScreen from "./pages/CategoriesScreen";
+import ProductsListScreen from "./pages/ProductsListScreen";
 import ProfileScreen from "./pages/ProfileScreen";
 import SuperAdminRoute from "./component/SuperAdmin/SuperAdminRoute";
 import SuperAdminDashboard from "./pages/SuperAdmin/SuperAdminDashboard";
@@ -86,6 +88,7 @@ function App() {
             <Route element={<UserRoute />}>
               <Route path="/dashboard" element={<UserDashboard />} />
               <Route path="/" element={<UserDashboard />} />
+              <Route path="/products" element={<ProductsListScreen />} />
               <Route path="/products/:id" element={<ProductScreen />} />
               <Route path="/categories" element={<CategoriesScreen />} />
               <Route path="/cart" element={<CartScreen />} />
@@ -127,6 +130,7 @@ function App() {
           </Routes>
         </div>
       </main>
+      <Footer />
     </SuperAdminProvider>
   );
 }

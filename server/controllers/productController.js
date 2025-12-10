@@ -151,7 +151,7 @@ const updateProduct = async (req, res) => {
             product.category = updates.category || product.category;
             product.subcategory = updates.subcategory !== undefined ? updates.subcategory : product.subcategory;
             product.attributes = updates.attributes !== undefined ? updates.attributes : product.attributes;
-            
+
             // Handle discount fields
             if (updates.originalPrice !== undefined) {
                 product.originalPrice = updates.originalPrice;
@@ -226,19 +226,34 @@ const deleteProduct = async (req, res) => {
 
 const getPublicProducts = async (req, res) => {
     try {
-        const { keyword, category, subcategory } = req.query; // Destructure query parameters
+        const {
+            keyword,
+            category,
+            subcategory,
+            minPrice,
+            maxPrice,
+            minDiscount,
+            inStock,
+            sortBy,
+            sortOrder,
+            ...attributeFilters
+        } = req.query;
 
-        // 1. Start with the essential filter: in stock products only
-        const filter = {
-            countInStock: { $gt: 0 }
-        };
+        // 1. Start with the essential filter: in stock products only (unless specified)
+        const filter = {};
+
+        if (inStock === 'true' || inStock === undefined) {
+            filter.countInStock = { $gt: 0 };
+        } else if (inStock === 'false') {
+            filter.countInStock = { $gte: 0 }; // Show all including out of stock
+        }
 
         // 2. Add keyword search if provided
         if (keyword) {
-            // Use MongoDB's $or for searching name OR description
             filter.$or = [
                 { name: { $regex: keyword, $options: 'i' } },
-                { description: { $regex: keyword, $options: 'i' } }
+                { description: { $regex: keyword, $options: 'i' } },
+                { productId: { $regex: keyword, $options: 'i' } }
             ];
         }
 
@@ -252,8 +267,79 @@ const getPublicProducts = async (req, res) => {
             filter.subcategory = subcategory;
         }
 
-        // 5. Execute the dynamic query
-        const products = await Product.find(filter);
+        // 5. Add price range filter
+        if (minPrice || maxPrice) {
+            filter.price = {};
+            if (minPrice) {
+                filter.price.$gte = parseFloat(minPrice);
+            }
+            if (maxPrice) {
+                filter.price.$lte = parseFloat(maxPrice);
+            }
+        }
+
+        // 6. Add discount filter
+        if (minDiscount) {
+            filter.discountPercentage = { $gte: parseFloat(minDiscount) };
+        }
+
+        // 7. Add attribute filters (dynamic based on category/subcategory)
+        // Attribute filters come as query params like: brand=Samsung&color=Black
+        // Since Product model doesn't have attributes field, we search in name/description
+        const attributeSearchTerms = [];
+        for (const [key, value] of Object.entries(attributeFilters)) {
+            // Skip known query params
+            if (!['keyword', 'category', 'subcategory', 'minPrice', 'maxPrice', 'minDiscount', 'inStock', 'sortBy', 'sortOrder'].includes(key)) {
+                if (value) {
+                    attributeSearchTerms.push(value);
+                }
+            }
+        }
+
+        // Combine attribute search with keyword search if both exist
+        if (attributeSearchTerms.length > 0) {
+            const attributeOrConditions = attributeSearchTerms.map(term => [
+                { name: { $regex: term, $options: 'i' } },
+                { description: { $regex: term, $options: 'i' } }
+            ]).flat();
+
+            if (filter.$or) {
+                // Combine keyword search with attribute search
+                filter.$or = [...filter.$or, ...attributeOrConditions];
+            } else {
+                filter.$or = attributeOrConditions;
+            }
+        }
+
+        // 8. Build sort object
+        let sortObj = {};
+        if (sortBy) {
+            const order = sortOrder === 'desc' ? -1 : 1;
+            switch (sortBy) {
+                case 'price':
+                    sortObj.price = order;
+                    break;
+                case 'name':
+                    sortObj.name = order;
+                    break;
+                case 'discount':
+                    sortObj.discountPercentage = order;
+                    break;
+                case 'newest':
+                    sortObj.createdAt = -1;
+                    break;
+                case 'oldest':
+                    sortObj.createdAt = 1;
+                    break;
+                default:
+                    sortObj.createdAt = -1; // Default: newest first
+            }
+        } else {
+            sortObj.createdAt = -1; // Default: newest first
+        }
+
+        // 9. Execute the query with filters and sorting
+        const products = await Product.find(filter).sort(sortObj);
 
         res.status(200).json(products);
     } catch (error) {
@@ -266,8 +352,18 @@ const getPublicProductDetails = async (req, res) => {
     try {
         const productId = req.params.id;
 
-        // 1. Find the product by ID
-        const product = await Product.findById(productId);
+        // 1. Try to find product by _id first, then by productId field
+        let product = null;
+
+        // Check if it's a valid MongoDB ObjectId format
+        if (productId.match(/^[0-9a-fA-F]{24}$/)) {
+            product = await Product.findById(productId);
+        }
+
+        // If not found by _id, try searching by productId field
+        if (!product) {
+            product = await Product.findOne({ productId: productId });
+        }
 
         if (product && product.countInStock > 0) {
             // 2. Product found and is in stock

@@ -9,9 +9,32 @@ function ProductItem({ product }) {
     const [isInWishlist, setIsInWishlist] = useState(false);
     const [wishlistLoading, setWishlistLoading] = useState(false);
 
-    const productImage = (product.images && product.images.length > 0) 
-        ? product.images[0] 
-        : (product.image || 'https://via.placeholder.com/200x200?text=No+Image');
+    // Get product image with proper URL handling
+    const getProductImage = () => {
+        let imageUrl = '';
+        if (product.images && product.images.length > 0) {
+            imageUrl = product.images[0];
+        } else if (product.image) {
+            imageUrl = product.image;
+        } else {
+            return 'https://via.placeholder.com/200x200?text=No+Image';
+        }
+        
+        // Handle empty or invalid image URLs
+        if (!imageUrl || imageUrl.trim() === '') {
+            return 'https://via.placeholder.com/200x200?text=No+Image';
+        }
+        
+        // If image is a relative path, add server URL
+        if (!imageUrl.startsWith('http') && !imageUrl.startsWith('//') && !imageUrl.startsWith('data:')) {
+            // Remove leading slash if present to avoid double slashes
+            const cleanPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+            return `http://localhost:5000/${cleanPath}`;
+        }
+        return imageUrl;
+    };
+    
+    const productImage = getProductImage();
 
     // Check if product is in wishlist
     useEffect(() => {
@@ -62,8 +85,9 @@ function ProductItem({ product }) {
     const showDiscount = discountPercentage > 0 && originalPrice > currentPrice;
 
     return (
-        <div className='col-lg-2 col-md-3 col-sm-4 col-6 mb-4'>
-            <div className='card h-100 position-relative' style={{ border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <div className='card h-100 position-relative' style={{ border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: '8px', overflow: 'hidden', transition: 'transform 0.2s, box-shadow 0.2s' }} 
+             onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'; }}
+             onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'; }}>
                 {/* Wishlist Heart Icon */}
                 {isAuthenticated && (
                     <button
@@ -113,29 +137,40 @@ function ProductItem({ product }) {
                 )}
 
                 <Link to={`/products/${product._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <div style={{ position: 'relative', paddingTop: '100%', overflow: 'hidden', backgroundColor: '#f8f9fa' }}>
+                    <div style={{ 
+                        position: 'relative', 
+                        width: '100%', 
+                        height: '220px', 
+                        overflow: 'hidden', 
+                        backgroundColor: '#f8f9fa',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '8px 8px 0 0'
+                    }}>
                         <img 
                             src={productImage} 
                             className='card-img-top' 
                             alt={product.name} 
                             style={{ 
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: '100%',
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                width: 'auto',
+                                height: 'auto',
                                 objectFit: 'contain',
-                                padding: '10px'
+                                padding: '15px'
                             }}
                             onError={(e) => {
-                                e.target.src = 'https://via.placeholder.com/200x200?text=Image+Error';
+                                if (e.target.src !== 'https://via.placeholder.com/200x200?text=Image+Error') {
+                                    e.target.src = 'https://via.placeholder.com/200x200?text=Image+Error';
+                                }
                             }}
                         />
                     </div>
                 </Link>
                 
-                <div className='card-body d-flex flex-column p-3'>
-                    <h6 className='card-title mb-2' style={{ fontSize: '14px', fontWeight: '500', minHeight: '40px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                <div className='card-body d-flex flex-column p-3' style={{ minHeight: '140px' }}>
+                    <h6 className='card-title mb-2' style={{ fontSize: '14px', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', minHeight: '40px', lineHeight: '1.4' }}>
                         {product.name}
                     </h6>
                     
@@ -167,7 +202,6 @@ function ProductItem({ product }) {
                     </div>
                 </div>
             </div>
-        </div>
     );
 }
 

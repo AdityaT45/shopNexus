@@ -4,6 +4,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import ProductItem from '../component/ProductItem';
 import CategoryNavigation from '../component/CategoryNavigation';
+import BannerCarousel from '../pages/user/BannerCarousel.jsx';
+import TopSellingProducts from '../pages/user/TopSellingProducts.jsx';
 
 function UserDashboard() {
     const navigate = useNavigate();
@@ -16,23 +18,30 @@ function UserDashboard() {
     const category = urlSearchParams.get('category') || '';
     const subcategory = urlSearchParams.get('subcategory') || '';
 
-    // Fetch products whenever the component mounts OR search/filter parameters change
+    // Redirect to products page if category or search is provided
+    useEffect(() => {
+        if (category || keyword) {
+            const params = new URLSearchParams();
+            if (keyword) params.set('keyword', keyword);
+            if (category) params.set('category', category);
+            if (subcategory) params.set('subcategory', subcategory);
+            navigate(`/products?${params.toString()}`);
+        }
+    }, [category, keyword, subcategory, navigate]);
+
+    // Fetch products whenever the component mounts (only for dashboard view)
     useEffect(() => {
         if (error) {
             console.error(error);
         }
         
-        // 1. CONSTRUCT QUERY STRING
-        let queryString = '';
-        if (keyword) { queryString += `?keyword=${keyword}`; }
-        if (category) { queryString += `${queryString ? '&' : '?'}category=${category}`; }
-        if (subcategory) { queryString += `${queryString ? '&' : '?'}subcategory=${subcategory}`; }
-        
-        // 2. 🔑 ACTION: Call context action with the query string
-        fetchProducts(queryString);
-        fetchTopProducts();
+        // Only fetch if no category/search filters (dashboard view)
+        if (!category && !keyword) {
+            fetchProducts('');
+            fetchTopProducts();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [keyword, category, subcategory]);
+    }, []);
 
     // Fetch user's orders and wishlist
     useEffect(() => {
@@ -63,105 +72,17 @@ function UserDashboard() {
             {/* <CategoryNavigation /> */}
             
             <div className='container-fluid mt-4'>
-            {/* Banners Section */}
-            <div className="mb-4">
-  {activeBanners && activeBanners.length > 0 ? (
-    <div id="bannerCarousel" className="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+          
+            
+  {/* Banners Section */}
 
-      {/* Indicators */}
-      <div className="carousel-indicators">
-        {activeBanners.map((banner, index) => (
-          <button
-            key={banner._id}
-            type="button"
-            data-bs-target="#bannerCarousel"
-            data-bs-slide-to={index}
-            className={index === 0 ? "active" : ""}
-            aria-current={index === 0 ? "true" : "false"}
-          ></button>
-        ))}
-      </div>
+    <BannerCarousel activeBanners={activeBanners} />           
 
-      {/* Carousel images */}
-      <div className="carousel-inner">
-        {activeBanners.map((banner, index) => (
-          <div
-            key={banner._id}
-            className={`carousel-item ${index === 0 ? "active" : ""}`}
-          >
-            <img
-              src={banner.image}
-              className="d-block w-100 rounded"
-              alt={banner.title}
-              style={{ height: "350px", objectFit: "cover" }}
-            />
-            <div className="carousel-caption d-none d-md-block">
-              <h5>{banner.title}</h5>
-            </div>
-          </div>
-        ))}
-      </div>
+    <h4 className='mb-4'>Welcome back, {user?.name || 'Guest'}!</h4>
 
-      {/* Controls */}
-      <button
-        className="carousel-control-prev"
-        type="button"
-        data-bs-target="#bannerCarousel"
-        data-bs-slide="prev"
-      >
-        <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-      </button>
-
-      <button
-        className="carousel-control-next"
-        type="button"
-        data-bs-target="#bannerCarousel"
-        data-bs-slide="next"
-      >
-        <span className="carousel-control-next-icon" aria-hidden="true"></span>
-      </button>
-
-    </div>
-  ) : (
-    <p>No active banners</p>
-  )}
-
-                    {/* TOP SELLING PRODUCTS */}
-                    {topProducts && topProducts.length > 0 && (
-                        <div className='mb-4'>
-                            <div className='d-flex justify-content-between align-items-center mb-3'>
-                                <h2 className='h4 mb-0'>Top Selling Products</h2>
-                            </div>
-                            <div className='row g-3'>
-                                {topProducts.slice(0, 6).map((product) => (
-                                    <div key={product.productId || product._id} className='col-lg-2 col-md-3 col-6'>
-                                        <div
-                                            className='card h-100 border-0 shadow-sm'
-                                            style={{ cursor: 'pointer' }}
-                                            onClick={() => navigate(`/product/${product.productId || product._id}`)}
-                                        >
-                                            <img
-                                                src={product.image || 'https://via.placeholder.com/150?text=Product'}
-                                                alt={product.name}
-                                                className='card-img-top'
-                                                style={{ height: '120px', objectFit: 'contain', padding: '10px' }}
-                                                onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=No+Image'; }}
-                                            />
-                                            <div className='card-body text-center p-2'>
-                                                <h6 className='card-title mb-1' style={{ fontSize: '13px' }}>{product.name}</h6>
-                                                <small className='text-muted d-block'>Sold: {product.totalSold}</small>
-                                                <strong className='text-success'>₹ {product.price?.toFixed(2) || '0.00'}</strong>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-</div>
-
-
-            <h4 className='mb-4'>Welcome back, {user?.name || 'Guest'}!</h4>
+    {topProducts && topProducts.length > 0 && (
+    <TopSellingProducts topProducts={topProducts} />
+)}
 
 
             {/* Products Section */}
@@ -175,7 +96,9 @@ function UserDashboard() {
                 ) : (
                     <div className='row'>
                         {products.map((product) => (
-                            <ProductItem key={product._id} product={product} />
+                            <div key={product._id} className='col-lg-2 col-md-3 col-sm-4 col-6 mb-4'>
+                                <ProductItem product={product} />
+                            </div>
                         ))}
                     </div>
                 )}
